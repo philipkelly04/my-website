@@ -97,3 +97,140 @@ body {
     animation: none;
   }
 }
+
+/* NHL games section */
+
+.coming-soon {
+  display: block;
+  min-height: 100svh;
+  overflow-x: hidden;
+}
+
+.brand-panel {
+  min-height: clamp(420px, 72svh, 760px);
+}
+
+.ticker {
+  min-height: clamp(92px, 15vh, 132px);
+}
+
+.games-section {
+  padding: clamp(48px, 7vw, 96px) clamp(20px, 6vw, 88px);
+  background:
+    radial-gradient(circle at top right, #292929 0, transparent 34%),
+    #0b0b0b;
+}
+
+.games-heading,
+.games-grid {
+  width: min(1200px, 100%);
+  margin-inline: auto;
+}
+
+.games-heading {
+  margin-bottom: 32px;
+}
+
+.games-label {
+  margin: 0 0 8px;
+  color: #aaa;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.games-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 18px;
+}
+
+.game-card {
+  padding: 22px;
+  background: linear-gradient(145deg, #202020, #121212);
+  border: 1px solid #333;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgb(0 0 0 / 25%);
+}
+
+.game-status {
+  margin: 0 0 18px;
+  color: #bdbdbd;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.team {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 62px;
+}
+
+.team + .team {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #303030;
+}
+
+.team img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.team span {
+  overflow: hidden;
+  color: #f5f5f5;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team strong {
+  color: #fff;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.games-message {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 28px;
+  color: #bdbdbd;
+  text-align: center;
+  background: #151515;
+  border: 1px dashed #3a3a3a;
+  border-radius: 14px;
+}
+
+@media (max-width: 640px) {
+  .brand-panel {
+    min-height: 58svh;
+  }
+
+  .games-section {
+    padding-block: 48px;
+  }
+
+  .game-card {
+    padding: 18px;
+  }
+}

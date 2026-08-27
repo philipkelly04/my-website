@@ -1,0 +1,99 @@
+:root {
+  color-scheme: dark;
+  --panel: #575757;
+  --ink: #f4f4f4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #000;
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.coming-soon {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) clamp(92px, 15vh, 132px);
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.brand-panel {
+  min-height: 0;
+  background-color: var(--panel);
+  background-image: url("pucklab-coming-soon.png");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: auto 118%;
+}
+
+.ticker {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #000;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ticker__track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: clamp(22px, 3vw, 52px);
+  padding-inline: clamp(18px, 3vw, 48px);
+  color: #fff;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(2.1rem, 4.2vw, 4.25rem);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: ticker 18s linear infinite;
+}
+
+.ticker__track span:nth-child(even) {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .coming-soon {
+    grid-template-rows: minmax(0, 1fr) 96px;
+  }
+
+  .brand-panel {
+    background-size: auto 112%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker__track {
+    animation: none;
+  }
+}

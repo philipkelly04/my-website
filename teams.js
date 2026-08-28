@@ -70,7 +70,7 @@
     if (!Array.isArray(data.games)) {
       throw new Error("Unexpected schedule response");
     }
-
+  updateScheduleBrand(selectedTeam, data.games);
     const list = element("ul", "schedule-list");
 
     const games = [...data.games].sort(
@@ -349,10 +349,101 @@ function renderRoster(data) {
     }
   }
 
+function updateScheduleBrand(code, games = []) {
+  const header = document.querySelector("#schedule-title");
+  if (!header) return;
+
+  const colors = {
+    ANA: "#F47A38",
+    BOS: "#FFB81C",
+    BUF: "#003087",
+    CGY: "#C8102E",
+    CAR: "#CC0000",
+    CHI: "#CF0A2C",
+    COL: "#6F263D",
+    CBJ: "#002654",
+    DAL: "#006847",
+    DET: "#CE1126",
+    EDM: "#FF4C00",
+    FLA: "#C8102E",
+    LAK: "#555555",
+    MIN: "#154734",
+    MTL: "#AF1E2D",
+    NSH: "#FFB81C",
+    NJD: "#CE1126",
+    NYI: "#00539B",
+    NYR: "#0038A8",
+    OTT: "#C52032",
+    PHI: "#F74902",
+    PIT: "#FFB81C",
+    SJS: "#006D75",
+    SEA: "#68A2B9",
+    STL: "#002F87",
+    TBL: "#002868",
+    TOR: "#00205B",
+    UTA: "#6CACE4",
+    VAN: "#00205B",
+    VGK: "#B4975A",
+    WSH: "#C8102E",
+    WPG: "#041E42"
+  };
+
+  header.classList.add("team-branded-header");
+  header.style.setProperty("--team-color", colors[code] || "#555");
+
+  const labels = element("span", "team-brand-labels");
+
+  labels.append(
+    element("span", "team-brand-name", teams[code] || code),
+    element(
+      "span",
+      "team-brand-subtitle",
+      `${SEASON.slice(0, 4)}–${SEASON.slice(6)} Schedule`
+    )
+  );
+
+  header.replaceChildren();
+
+  // Use the logo supplied by the NHL schedule.
+  const teamData = games
+    .flatMap(game => [game.homeTeam, game.awayTeam])
+    .find(team => team?.abbrev === code);
+
+  const logo = teamData?.darkLogo || teamData?.logo;
+
+  if (logo) {
+    try {
+      const url = new URL(logo);
+
+      if (
+        url.protocol === "https:" &&
+        url.hostname === "assets.nhle.com"
+      ) {
+        const image = element("img", "team-brand-logo");
+        image.src = url.href;
+        image.alt = "";
+        image.width = 56;
+        image.height = 56;
+
+        image.addEventListener("error", () => image.remove(), {
+          once: true
+        });
+
+        header.append(image);
+      }
+    } catch {
+      // Keep the team name visible if its logo is unavailable.
+    }
+  }
+
+  header.append(labels);
+}
+
+  
   async function loadTeam() {
     const number = ++requestNumber;
     const team = select.value;
-
+updateScheduleBrand(team);
     status.textContent = `Loading ${teams[team]}…`;
     message(schedule, "Loading schedule…");
     message(roster, "Loading roster…");

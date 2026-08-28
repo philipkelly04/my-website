@@ -155,59 +155,172 @@
     return list;
   }
 
-  function renderRoster(data) {
-    const groups = [
-      ["Forwards", data.forwards],
-      ["Defensemen", data.defensemen],
-      ["Goalies", data.goalies]
-    ];
+  let playerPointsPromise = null;
 
-    if (!groups.some(([, players]) => Array.isArray(players))) {
-      throw new Error("Unexpected roster response");
+function renderRoster(data) {
+  const keys = ["forwards", "defensemen", "goalies"];
+
+  if (!keys.some(key => Array.isArray(data[key]))) {
+    throw new Error("Unexpected roster response");
+  }
+
+  const players = key => Array.isArray(data[key]) ? data[key] : [];
+  const skaters = [...players("forwards"), ...players("defensemen")];
+  const goalies = players("goalies");
+
+  const content = element("div", "roster-content");
+  const note = element(
+    "p",
+    "roster-stats-note",
+    "Loading regular-season points…"
+  );
+  note.setAttribute("role", "status");
+
+  const skaterGroup = element("section", "roster-group");
+  const skaterList = element("ul", "roster-list");
+
+  skaterGroup.append(
+    element("h4", "", "Skaters · Highest points first"),
+    skaterList
+  );
+
+  function playerName(player) {
+    return [
+      player.firstName?.default,
+      player.lastName?.default
+    ].filter(Boolean).join(" ") || "Name unavailable";
+  }
+
+  function playerRow(player, points, showPoints) {
+    const row = element(
+      "li",
+      showPoints ? "roster-row has-points" : "roster-row"
+    );
+
+    row.append(
+      element(
+        "span",
+        "player-number",
+        player.sweaterNumber == null
+          ? "–"
+          : `#${player.sweaterNumber}`
+      ),
+      element("strong", "player-name", playerName(player)),
+      element("span", "player-position", player.positionCode || "")
+    );
+
+    if (showPoints) {
+      const badge = element(
+        "strong",
+        "player-points",
+        `${points ?? "—"} PTS`
+      );
+      badge.title = points == null
+        ? "Points not available"
+        : `${points} regular-season points`;
+
+      row.append(badge);
     }
 
-    const fragment = document.createDocumentFragment();
+    return row;
+  }
 
-    groups.forEach(([label, players]) => {
-      const group = element("section", "roster-group");
-      group.append(element("h4", "", label));
+  function displaySkaters(points = new Map()) {
+    const sorted = [...skaters].sort((a, b) => {
+      const aPoints = points.get(String(a.id)) ?? -1;
+      const bPoints = points.get(String(b.id)) ?? -1;
 
-      if (!players?.length) {
-        group.append(element("p", "", "No players listed."));
-      } else {
-        const list = element("ul", "roster-list");
-
-        players.forEach(player => {
-          const name = [
-            player.firstName?.default,
-            player.lastName?.default
-          ].filter(Boolean).join(" ");
-
-          const row = element("li", "roster-row");
-
-          row.append(
-            element(
-              "span",
-              "player-number",
-              player.sweaterNumber == null
-                ? "–"
-                : `#${player.sweaterNumber}`
-            ),
-            element("strong", "player-name", name || "Name unavailable"),
-            element("span", "player-position", player.positionCode || "")
-          );
-
-          list.append(row);
-        });
-
-        group.append(list);
-      }
-
-      fragment.append(group);
+      return bPoints - aPoints ||
+        playerName(a).localeCompare(playerName(b));
     });
 
-    return fragment;
+    skaterList.replaceChildren();
+
+    if (!sorted.length) {
+      skaterList.append(
+        element("li", "games-message", "No skaters listed.")
+      );
+      return;
+    }
+
+    sorted.forEach(player => {
+      skaterList.append(
+        playerRow(player, points.get(String(player.id)), true)
+      );
+    });
   }
+
+  displaySkaters();
+
+  const goalieGroup = element("section", "roster-group");
+  const goalieList = element("ul", "roster-list");
+
+  goalieGroup.append(element("h4", "", "Goalies"), goalieList);
+
+  goalies.forEach(player => {
+    goalieList.append(playerRow(player, null, false));
+  });
+
+  if (!goalies.length) {
+    goalieList.append(
+      element("li", "games-message", "No goalies listed.")
+    );
+  }
+
+  content.append(note, skaterGroup, goalieGroup);
+
+  // Fetch points once per page load, then reuse for other teams.
+  if (!playerPointsPromise) {
+    playerPointsPromise = fetch("/api/player-points", {
+      signal: AbortSignal.timeout(15000)
+    })
+      .then(response => {
+        if (!response.ok) throw new Error("Points request failed");
+        return response.json();
+      })
+      .catch(() => null);
+  }
+
+  playerPointsPromise.then(stats => {
+    if (!stats || stats.status === "error") {
+      note.textContent =
+        "Points temporarily unavailable. Refresh the page to retry.";
+      return;
+    }
+
+    if (stats.status === "unavailable") {
+      note.textContent =
+        `${stats.seasonLabel} regular-season stats are not available yet.`;
+      return;
+    }
+
+    if (!Array.isArray(stats.points)) {
+      note.textContent = "Player points could not be read.";
+      return;
+    }
+
+    const points = new Map();
+
+    stats.points.forEach(player => {
+      if (
+        player.id != null &&
+        typeof player.value === "number" &&
+        Number.isFinite(player.value) &&
+        player.value >= 0
+      ) {
+        points.set(String(player.id), player.value);
+      }
+    });
+
+    displaySkaters(points);
+
+    note.textContent =
+      `${stats.seasonLabel} regular-season NHL points · ` +
+      "Highest first · — means no data available.";
+  });
+
+  return content;
+}
 
   // Prevent an older request overwriting a newly selected team.
   let requestNumber = 0;

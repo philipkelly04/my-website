@@ -37,6 +37,41 @@
     <p class="games-message">Loading games…</p>
   </div>
 </section>
+
+<section class="teams-section" aria-labelledby="teams-title">
+  <div class="teams-heading">
+    <p class="games-label">Explore the league</p>
+    <h2 id="teams-title">Your Team</h2>
+  </div>
+
+  <div class="team-toolbar">
+    <label for="team-select">Choose a team</label>
+
+    <select id="team-select" disabled>
+      <option value="TOR">Toronto Maple Leafs</option>
+    </select>
+  </div>
+
+  <p id="team-status" role="status"></p>
+
+  <div class="team-panels">
+    <section aria-labelledby="schedule-title">
+      <h3 id="schedule-title">2026–27 Schedule</h3>
+
+      <div id="team-schedule">
+        <p>Select a team to view its schedule.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="roster-title">
+      <h3 id="roster-title">Current Roster</h3>
+
+      <div id="team-roster">
+        <p>Select a team to view its players.</p>
+      </div>
+    </section>
+  </div>
+</section>
       
     </main>
 

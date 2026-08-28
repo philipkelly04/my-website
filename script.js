@@ -15,23 +15,35 @@ function teamName(team) {
 }
 
 function gameStatus(game) {
+  const start = new Date(game.startTimeUTC);
+
+  const date = start.toLocaleDateString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric"
+  });
+
   if (["FINAL", "OFF"].includes(game.gameState)) {
-    return "Final";
+    return `${date} · Final`;
   }
 
   if (["LIVE", "CRIT"].includes(game.gameState)) {
     const period = game.periodDescriptor?.number;
     const clock = game.clock?.timeRemaining;
 
-    return [period ? `Period ${period}` : "Live", clock]
-      .filter(Boolean)
-      .join(" · ");
+    return [
+      date,
+      period ? `Live · Period ${period}` : "Live",
+      clock
+    ].filter(Boolean).join(" · ");
   }
 
-  return new Date(game.startTimeUTC).toLocaleTimeString([], {
+  const time = start.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit"
   });
+
+  return `${date} · ${time}`;
 }
 
 async function loadGames() {

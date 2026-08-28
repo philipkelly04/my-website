@@ -1,43 +1,170 @@
 (() => {
   const body = document.querySelector("#standings-body");
   const meta = document.querySelector("#standings-meta");
-  const caption = document.querySelector("#standings-caption");
+  const wrapper = body?.closest(".standings-table-wrap");
 
-  if (!body || !meta || !caption) return;
+  if (!body || !meta || !wrapper) return;
+
+  const divisions = [
+    { code: "A", name: "Atlantic", conference: "Eastern", color: "#69b7ff" },
+    { code: "M", name: "Metropolitan", conference: "Eastern", color: "#c49bff" },
+    { code: "C", name: "Central", conference: "Western", color: "#ffc76b" },
+    { code: "P", name: "Pacific", conference: "Western", color: "#64d8bc" }
+  ];
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
 
   function showMessage(text) {
-    const row = document.createElement("tr");
-    const cell = document.createElement("td");
-
+    const row = element("tr");
+    const cell = element("td", "standings-message", text);
     cell.colSpan = 7;
-    cell.className = "standings-message";
-    cell.textContent = text;
-
     row.append(cell);
     body.replaceChildren(row);
   }
 
-  function seasonLabel(value) {
-    const season = String(value || "");
+  function makeDivision(division, entries) {
+    const card = element("section", "division-card");
+    card.style.setProperty("--division-accent", division.color);
 
-    return /^\d{8}$/.test(season)
-      ? `${season.slice(0, 4)}–${season.slice(6)}`
-      : "Season not supplied";
-  }
+    const heading = element("div", "division-heading");
+    const title = element("h3", "", division.name);
+    title.id = `division-${division.code}`;
 
-  function dateLabel(value) {
-    if (!value) return "Date not supplied";
+    heading.append(
+      element("p", "", `${division.conference} Conference`),
+      title
+    );
 
-    const date = new Date(`${value}T00:00:00Z`);
+    const scroll = element("div", "division-scroll");
+    scroll.tabIndex = 0;
+    scroll.setAttribute("role", "region");
+    scroll.setAttribute("aria-labelledby", title.id);
 
-    if (Number.isNaN(date.getTime())) return value;
+    const table = element("table", "standings-table division-table");
+    table.setAttribute("aria-describedby", "standings-legend");
 
-    return date.toLocaleDateString([], {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC"
+    table.append(
+      element(
+        "caption",
+        "visually-hidden",
+        `${division.name} division standings`
+      )
+    );
+
+    const thead = element("thead");
+    const header = element("tr");
+
+    ["Rank", "Team", "GP", "W", "L", "OT", "PTS"].forEach(label => {
+      const cell = element("th", "", label);
+      cell.scope = "col";
+      header.append(cell);
     });
+
+    thead.append(header);
+    table.append(thead);
+
+    const tbody = element("tbody");
+    const teams = [...entries];
+    const ranks = teams.map(team => team.divisionSequence);
+
+    const ranked = ranks.every(
+      rank => Number.isInteger(rank) && rank > 0
+    ) && new Set(ranks).size === teams.length;
+
+    if (ranked) {
+      teams.sort((a, b) => a.divisionSequence - b.divisionSequence);
+    }
+
+    teams.forEach(team => {
+      const row = element("tr");
+
+      row.append(
+        element(
+          "td",
+          "standings-rank",
+          ranked ? team.divisionSequence : "–"
+        )
+      );
+
+      const nameCell = element("th", "standings-team");
+      nameCell.scope = "row";
+
+      const label = element("div", "standings-team-label");
+      const logo = team.teamLogoDark || team.teamLogo;
+
+      if (logo) {
+        try {
+          const url = new URL(logo);
+
+          if (
+            url.protocol === "https:" &&
+            url.hostname === "assets.nhle.com"
+          ) {
+            const image = element("img", "standings-logo");
+            image.src = url.href;
+            image.alt = "";
+            image.width = 32;
+            image.height = 32;
+            image.loading = "lazy";
+            image.addEventListener("error", () => image.remove(), {
+              once: true
+            });
+            label.append(image);
+          }
+        } catch {
+          // Display the team name even if its logo URL is invalid.
+        }
+      }
+
+      label.append(
+        element(
+          "span",
+          "",
+          team.teamName?.default ||
+          team.teamAbbrev?.default ||
+          "Unknown team"
+        )
+      );
+
+      nameCell.append(label);
+      row.append(nameCell);
+
+      ["gamesPlayed", "wins", "losses", "otLosses", "points"]
+        .forEach(field => {
+          row.append(
+            element(
+              "td",
+              field === "points" ? "standings-points" : "",
+              team[field] ?? "–"
+            )
+          );
+        });
+
+      tbody.append(row);
+    });
+
+    if (!teams.length) {
+      const row = element("tr");
+      const cell = element(
+        "td",
+        "standings-message",
+        "No standings available for this division."
+      );
+      cell.colSpan = 7;
+      row.append(cell);
+      tbody.append(row);
+    }
+
+    table.append(tbody);
+    scroll.append(table);
+    card.append(heading, scroll);
+
+    return card;
   }
 
   async function loadStandings() {
@@ -54,7 +181,7 @@
         throw new Error("Unexpected standings response");
       }
 
-      const teams = [...data.standings];
+      const teams = data.standings;
 
       if (!teams.length) {
         meta.textContent = "Waiting for published standings.";
@@ -62,64 +189,36 @@
         return;
       }
 
-      // Use NHL rankings rather than inventing our own tiebreakers.
-      const ranks = teams.map(team => team.leagueSequence);
-      const validRanks = ranks.every(
-        rank => Number.isInteger(rank) && rank > 0
-      ) && new Set(ranks).size === teams.length;
+      const seasonId = String(teams[0].seasonId || "");
+      const season = /^\d{8}$/.test(seasonId)
+        ? `${seasonId.slice(0, 4)}–${seasonId.slice(6)}`
+        : "Season not supplied";
 
-      if (validRanks) {
-        teams.sort((a, b) => a.leagueSequence - b.leagueSequence);
-      }
+      const date = new Date(`${teams[0].date}T00:00:00Z`);
+      const dateText = Number.isNaN(date.getTime())
+        ? "Date not supplied"
+        : date.toLocaleDateString([], {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            timeZone: "UTC"
+          });
 
-      const season = seasonLabel(teams[0].seasonId);
-      const date = dateLabel(teams[0].date);
+      const cards = divisions.map(division =>
+        makeDivision(
+          division,
+          teams.filter(team => team.divisionAbbrev === division.code)
+        )
+      );
 
-      meta.textContent = `${season} · Standings as of ${date}`;
-      caption.textContent = `NHL league standings · ${season}`;
+      wrapper.replaceChildren(...cards);
+      wrapper.className = "division-standings";
+      wrapper.removeAttribute("tabindex");
+      wrapper.removeAttribute("role");
+      wrapper.removeAttribute("aria-labelledby");
 
-      const fragment = document.createDocumentFragment();
-
-      teams.forEach(team => {
-        const row = document.createElement("tr");
-
-        const rank = document.createElement("td");
-        rank.className = "standings-rank";
-        rank.textContent = validRanks ? team.leagueSequence : "–";
-        row.append(rank);
-
-        const name = document.createElement("th");
-        name.scope = "row";
-        name.className = "standings-team";
-        name.textContent =
-          team.teamName?.default ||
-          team.teamAbbrev?.default ||
-          "Unknown team";
-        row.append(name);
-
-        const fields = [
-          "gamesPlayed",
-          "wins",
-          "losses",
-          "otLosses",
-          "points"
-        ];
-
-        fields.forEach(field => {
-          const cell = document.createElement("td");
-          cell.textContent = team[field] ?? "–";
-
-          if (field === "points") {
-            cell.className = "standings-points";
-          }
-
-          row.append(cell);
-        });
-
-        fragment.append(row);
-      });
-
-      body.replaceChildren(fragment);
+      meta.textContent =
+        `${season} · Standings as of ${dateText}`;
     } catch {
       meta.textContent = "Standings could not be loaded.";
       showMessage("Temporarily unavailable. Refresh the page to retry.");

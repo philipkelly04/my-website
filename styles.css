@@ -666,3 +666,26 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* Player points */
+
+.roster-stats-note {
+  margin: 0;
+  padding: 16px 22px;
+  color: #bbb;
+  border-bottom: 1px solid #363636;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.roster-row.has-points {
+  grid-template-columns: 40px minmax(0, 1fr) 24px 64px;
+  gap: 10px;
+}
+
+.player-points {
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

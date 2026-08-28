@@ -74,6 +74,50 @@
     </section>
   </div>
 </section>
+
+<section class="standings-section" aria-labelledby="standings-title">
+  <div class="standings-heading">
+    <p class="games-label">Around the league</p>
+    <h2 id="standings-title">NHL Standings</h2>
+    <p id="standings-meta" role="status">Loading standings…</p>
+  </div>
+
+  <div class="standings-table-wrap"
+       tabindex="0"
+       role="region"
+       aria-labelledby="standings-title">
+
+    <table class="standings-table"
+           aria-describedby="standings-legend">
+      <caption id="standings-caption">
+        NHL league standings
+      </caption>
+
+      <thead>
+        <tr>
+          <th scope="col">Rank</th>
+          <th scope="col">Team</th>
+          <th scope="col">GP</th>
+          <th scope="col">W</th>
+          <th scope="col">L</th>
+          <th scope="col">OT</th>
+          <th scope="col">PTS</th>
+        </tr>
+      </thead>
+
+      <tbody id="standings-body">
+        <tr>
+          <td colspan="7">Loading teams…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p id="standings-legend">
+    GP: Games played · W: Wins · L: Regulation losses ·
+    OT: Overtime/shootout losses · PTS: Points
+  </p>
+</section>
       
     </main>
 

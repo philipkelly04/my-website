@@ -583,3 +583,86 @@ body {
     max-height: 480px;
   }
 }
+/* Division standings with team logos */
+
+.division-standings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.division-card {
+  min-width: 0;
+  overflow: hidden;
+  background: #191919;
+  border: 1px solid #363636;
+  border-top: 4px solid var(--division-accent);
+  border-radius: 16px;
+}
+
+.division-heading {
+  padding: 20px;
+  background: #222;
+  border-bottom: 1px solid #363636;
+}
+
+.division-heading p {
+  margin: 0 0 7px;
+  color: #bbb;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.division-heading h3 {
+  margin: 0;
+  color: var(--division-accent);
+  font-size: 1.5rem;
+}
+
+.division-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #191919;
+}
+
+.division-scroll:focus-visible {
+  outline: 2px solid var(--division-accent);
+  outline-offset: -3px;
+}
+
+.division-table {
+  min-width: 540px;
+  font-size: 0.8rem;
+}
+
+.division-table thead th,
+.division-table tbody td,
+.division-table tbody th {
+  padding: 12px 10px;
+}
+
+.standings-team-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 190px;
+}
+
+.standings-logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.division-table .standings-points {
+  color: var(--division-accent);
+}
+
+@media (max-width: 1100px) {
+  .division-standings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

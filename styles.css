@@ -234,3 +234,206 @@ body {
     padding: 18px;
   }
 }
+
+/* Team schedules and rosters */
+
+.teams-section {
+  padding: 64px clamp(20px, 6vw, 88px);
+  background: #101010;
+  border-top: 1px solid #303030;
+}
+
+.teams-section > * {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.teams-heading {
+  margin-bottom: 28px;
+}
+
+.teams-heading h2 {
+  margin: 0;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.team-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.team-toolbar label {
+  color: #ccc;
+  font-weight: 700;
+}
+
+#team-select {
+  width: min(100%, 340px);
+  padding: 14px 16px;
+  color: #fff;
+  background: #222;
+  border: 1px solid #555;
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+#team-select:focus-visible,
+#team-schedule:focus-visible,
+#team-roster:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+#team-status {
+  min-height: 1.5em;
+  margin-block: 18px 24px;
+  color: #bbb;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.team-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.team-panels > section {
+  min-width: 0;
+  overflow: hidden;
+  background: #191919;
+  border: 1px solid #363636;
+  border-radius: 16px;
+}
+
+.team-panels h3 {
+  margin: 0;
+  padding: 22px;
+  background: #222;
+  border-bottom: 1px solid #363636;
+  font-size: 1.15rem;
+}
+
+#team-schedule,
+#team-roster {
+  max-height: 560px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #191919;
+}
+
+.schedule-list,
+.roster-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule-row {
+  display: grid;
+  gap: 7px;
+  padding: 20px 22px;
+}
+
+.schedule-row + .schedule-row {
+  border-top: 1px solid #303030;
+}
+
+.schedule-date {
+  color: #bbb;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.schedule-opponent {
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.schedule-detail {
+  color: #aaa;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.roster-group h4 {
+  margin: 0;
+  padding: 14px 22px;
+  color: #bbb;
+  background: #242424;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.roster-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+}
+
+.roster-row + .roster-row {
+  border-top: 1px solid #303030;
+}
+
+.player-number {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.player-name {
+  color: #eee;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.player-position {
+  color: #bbb;
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.roster-group > p {
+  padding: 16px 22px;
+  color: #aaa;
+}
+
+.team-panels .games-message {
+  margin: 16px;
+}
+
+@media (max-width: 850px) {
+  .team-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #team-schedule,
+  #team-roster {
+    max-height: 420px;
+  }
+}
+
+@media (max-width: 480px) {
+  .team-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #team-select {
+    width: 100%;
+  }
+
+  .teams-section {
+    padding-block: 48px;
+  }
+}

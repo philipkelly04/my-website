@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Game Center | PuckLab</title>
+
+  <link rel="stylesheet" href="game-center.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <a href="/" class="back-link">← Back to PuckLab</a>
+    <span class="pucklab-name">PUCKLAB GAME CENTER</span>
+  </header>
+
+  <main class="game-container">
+    <p id="loadingMessage" class="message">
+      Loading Game Center…
+    </p>
+
+    <p id="errorMessage" class="message error-message" hidden></p>
+
+    <section id="gameContent" hidden>
+      <div id="gameHeader" class="game-header">
+        <p id="gameDetails" class="game-details"></p>
+
+        <div class="scoreboard">
+          <div class="team">
+            <img id="awayLogo" class="team-logo" alt="">
+            <h1 id="awayName"></h1>
+            <p id="awayRecord" class="team-record"></p>
+          </div>
+
+          <div class="score">
+            <span id="awayScore">0</span>
+            <span class="score-divider">–</span>
+            <span id="homeScore">0</span>
+            <p id="gameStatus" class="game-status"></p>
+          </div>
+
+          <div class="team">
+            <img id="homeLogo" class="team-logo" alt="">
+            <h1 id="homeName"></h1>
+            <p id="homeRecord" class="team-record"></p>
+          </div>
+        </div>
+
+        <div class="shots">
+          Shots:
+          <strong id="awayShots">0</strong>
+          –
+          <strong id="homeShots">0</strong>
+        </div>
+      </div>
+
+      <section class="stats-section">
+        <h2>Player Statistics</h2>
+
+        <div class="team-stats">
+          <h3 id="awayStatsHeading">Away Team</h3>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>G</th>
+                  <th>A</th>
+                  <th>PTS</th>
+                  <th>+/-</th>
+                  <th>SOG</th>
+                  <th>TOI</th>
+                </tr>
+              </thead>
+
+              <tbody id="awayPlayerStats"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="team-stats">
+          <h3 id="homeStatsHeading">Home Team</h3>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>G</th>
+                  <th>A</th>
+                  <th>PTS</th>
+                  <th>+/-</th>
+                  <th>SOG</th>
+                  <th>TOI</th>
+                </tr>
+              </thead>
+
+              <tbody id="homePlayerStats"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="game-center.js"></script>
+</body>
+</html>

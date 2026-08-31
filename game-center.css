@@ -1,0 +1,231 @@
+:root {
+  --away-color: #555555;
+  --home-color: #222222;
+  --background: #0b0d10;
+  --panel: #15191f;
+  --border: #2a3039;
+  --text: #f5f7fa;
+  --muted: #aab2bf;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 5%;
+  background: #050607;
+  border-bottom: 1px solid var(--border);
+}
+
+.back-link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.pucklab-name {
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.game-container {
+  width: min(1100px, 92%);
+  margin: 36px auto;
+}
+
+.message {
+  padding: 30px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.error-message {
+  color: #ff8b8b;
+}
+
+.game-header {
+  position: relative;
+  overflow: hidden;
+  padding: 32px;
+  background:
+    linear-gradient(
+      110deg,
+      var(--away-color) 0%,
+      #15191f 45%,
+      #15191f 55%,
+      var(--home-color) 100%
+    );
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+
+.game-details,
+.game-status,
+.shots {
+  text-align: center;
+}
+
+.game-details {
+  margin: 0 0 28px;
+  color: #ffffff;
+}
+
+.scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 28px;
+}
+
+.team {
+  text-align: center;
+}
+
+.team-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.team h1 {
+  margin: 10px 0 4px;
+  font-size: 1.5rem;
+}
+
+.team-record {
+  margin: 0;
+  color: #e4e8ed;
+}
+
+.score {
+  min-width: 220px;
+  text-align: center;
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 900;
+}
+
+.score-divider {
+  color: var(--muted);
+}
+
+.game-status {
+  margin: 8px 0 0;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.shots {
+  margin-top: 26px;
+  color: #ffffff;
+}
+
+.stats-section {
+  margin-top: 34px;
+}
+
+.stats-section h2 {
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.team-stats {
+  margin-bottom: 28px;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.team-stats h3 {
+  margin-top: 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+
+th {
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 700px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .game-header {
+    padding: 24px 14px;
+  }
+
+  .scoreboard {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+  }
+
+  .team-logo {
+    width: 72px;
+    height: 72px;
+  }
+
+  .team h1 {
+    font-size: 1rem;
+  }
+
+  .score {
+    min-width: auto;
+    font-size: 2.3rem;
+  }
+
+  .team-stats {
+    padding: 14px;
+  }
+
+  th,
+  td {
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+}

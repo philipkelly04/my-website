@@ -171,6 +171,176 @@ function displayPlayerStats(teamStats, tableBodyId) {
   }
 }
 
+function addGoalieStat(container, value, label) {
+  const stat = document.createElement("div");
+  stat.className = "goalie-stat";
+
+  const statValue = document.createElement("span");
+  statValue.className = "goalie-stat-value";
+  statValue.textContent = value ?? "—";
+
+  const statLabel = document.createElement("span");
+  statLabel.className = "goalie-stat-label";
+  statLabel.textContent = label;
+
+  stat.append(statValue, statLabel);
+  container.appendChild(stat);
+}
+
+function formatSavePercentage(value) {
+  if (!Number.isFinite(value)) return "—";
+
+  return value.toFixed(3).replace(/^0/, "");
+}
+
+function createGoalieCard(goalie, team, game) {
+  const card = document.createElement("article");
+  card.className = "goalie-card";
+
+  card.style.setProperty(
+    "--goalie-team-color",
+    TEAM_COLORS[team.abbrev] || "#ffffff"
+  );
+
+  const header = document.createElement("div");
+  header.className = "goalie-header";
+
+  const headshot = document.createElement("img");
+  headshot.className = "goalie-headshot";
+  headshot.src =
+    `https://assets.nhle.com/mugs/nhl/${game.season}/` +
+    `${team.abbrev}/${goalie.playerId}.png`;
+
+  headshot.alt = `${goalie.name?.default || "Goalie"} headshot`;
+
+  headshot.onerror = () => {
+    headshot.onerror = null;
+    headshot.src = team.logo;
+  };
+
+  const information = document.createElement("div");
+
+  const name = document.createElement("h3");
+  name.className = "goalie-name";
+  name.textContent =
+    `#${goalie.sweaterNumber ?? "—"} ` +
+    `${goalie.name?.default || "Goalie"}`;
+
+  const teamLabel = document.createElement("p");
+  teamLabel.className = "goalie-team";
+  teamLabel.textContent = team.abbrev;
+
+  const badges = document.createElement("div");
+  badges.className = "goalie-badges";
+
+  if (goalie.starter) {
+    const starterBadge = document.createElement("span");
+    starterBadge.className = "goalie-badge";
+    starterBadge.textContent = "STARTER";
+    badges.appendChild(starterBadge);
+  }
+
+  if (goalie.decision) {
+    const decisionBadge = document.createElement("span");
+    decisionBadge.className = "goalie-badge";
+
+    const decisions = {
+      W: "WIN",
+      L: "LOSS",
+      O: "OT LOSS"
+    };
+
+    decisionBadge.textContent =
+      decisions[goalie.decision] || goalie.decision;
+
+    badges.appendChild(decisionBadge);
+  }
+
+  information.append(name, teamLabel, badges);
+  header.append(headshot, information);
+
+  const stats = document.createElement("div");
+  stats.className = "goalie-stats";
+
+  addGoalieStat(stats, goalie.saves ?? 0, "Saves");
+  addGoalieStat(stats, goalie.shotsAgainst ?? 0, "Shots faced");
+  addGoalieStat(
+    stats,
+    formatSavePercentage(goalie.savePctg),
+    "Save %"
+  );
+  addGoalieStat(stats, goalie.goalsAgainst ?? 0, "Goals allowed");
+  addGoalieStat(stats, goalie.toi || "—", "Time on ice");
+  addGoalieStat(
+    stats,
+    goalie.evenStrengthShotsAgainst || "—",
+    "EV saves"
+  );
+  addGoalieStat(
+    stats,
+    goalie.powerPlayShotsAgainst || "—",
+    "PP saves"
+  );
+  addGoalieStat(
+    stats,
+    goalie.shorthandedShotsAgainst || "—",
+    "SH saves"
+  );
+  addGoalieStat(stats, goalie.pim ?? 0, "PIM");
+
+  card.append(header, stats);
+
+  return card;
+}
+
+function displayGoalies(game) {
+  const container = document.querySelector("#goalieCards");
+
+  if (!container) return;
+
+  container.replaceChildren();
+
+  const teamGroups = [
+    {
+      team: game.awayTeam,
+      goalies: game.playerByGameStats?.awayTeam?.goalies || []
+    },
+    {
+      team: game.homeTeam,
+      goalies: game.playerByGameStats?.homeTeam?.goalies || []
+    }
+  ];
+
+  let displayedGoalies = 0;
+
+  for (const group of teamGroups) {
+    const goaliesWhoPlayed = group.goalies.filter(goalie => {
+      return goalie.starter || (
+        goalie.toi &&
+        goalie.toi !== "00:00"
+      );
+    });
+
+    for (const goalie of goaliesWhoPlayed) {
+      container.appendChild(
+        createGoalieCard(goalie, group.team, game)
+      );
+
+      displayedGoalies += 1;
+    }
+  }
+
+  if (displayedGoalies === 0) {
+    const message = document.createElement("p");
+    message.className = "stats-message";
+    message.textContent =
+      "Goalie statistics will appear when the game begins.";
+
+    container.appendChild(message);
+  }
+}
+
+
 function displayGame(game) {
   const away = game.awayTeam;
   const home = game.homeTeam;
@@ -216,7 +386,7 @@ function displayGame(game) {
     game.playerByGameStats?.homeTeam,
     "#homePlayerStats"
   );
-
+  displayGoalies(game);
   document.title =
     `${away.abbrev} vs ${home.abbrev} | PuckLab Game Center`;
 

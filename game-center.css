@@ -509,3 +509,113 @@ tbody tr:hover {
   outline: 3px solid #ffffff;
   outline-offset: 3px;
 }
+
+.goalie-section {
+  margin-top: 34px;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.goalie-section h2 {
+  margin-top: 0;
+}
+
+.goalie-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.goalie-card {
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--goalie-team-color, #ffffff);
+  border-radius: 12px;
+}
+
+.goalie-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+}
+
+.goalie-headshot {
+  width: 82px;
+  height: 82px;
+  object-fit: cover;
+  object-position: top;
+  background: #e8edf3;
+  border-radius: 50%;
+}
+
+.goalie-name {
+  margin: 0 0 5px;
+  font-size: 1.2rem;
+}
+
+.goalie-team {
+  margin: 0;
+  color: var(--muted);
+}
+
+.goalie-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.goalie-badge {
+  padding: 3px 7px;
+  color: #111111;
+  background: #e8edf3;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.goalie-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--border);
+}
+
+.goalie-stat {
+  padding: 14px 8px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.goalie-stat:nth-child(3n) {
+  border-right: 0;
+}
+
+.goalie-stat-value {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.goalie-stat-label {
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .goalie-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .goalie-headshot {
+    width: 68px;
+    height: 68px;
+  }
+}

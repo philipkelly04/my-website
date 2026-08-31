@@ -75,7 +75,13 @@ async function loadGames() {
       const home = game.homeTeam || {};
 
       return `
-        <article class="game-card">
+        return `
+        <a
+          class="game-card"
+          href="/game.html?id=${encodeURIComponent(game.id)}"
+          aria-label="Open ${escapeHtml(teamName(away))} versus ${escapeHtml(teamName(home))} Game Center"
+          style="display: block; color: inherit; text-decoration: none;"
+        >
           <p class="game-status">${escapeHtml(gameStatus(game))}</p>
 
           <div class="team">
@@ -95,7 +101,7 @@ async function loadGames() {
             <span>${escapeHtml(teamName(home))}</span>
             <strong>${home.score ?? "–"}</strong>
           </div>
-        </article>
+                </a>
       `;
     }).join("");
   } catch (error) {

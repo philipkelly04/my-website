@@ -411,6 +411,73 @@ function eventPlayerId(play) {
   return play.details?.shootingPlayerId;
 }
 
+function setupTeamFilters(playData) {
+  const allButton = document.querySelector(
+    '.team-filter[data-team="all"]'
+  );
+
+  const awayButton = document.querySelector("#awayTeamFilter");
+  const homeButton = document.querySelector("#homeTeamFilter");
+  const detailsBox = document.querySelector("#shotMapDetails");
+
+  awayButton.textContent = playData.awayTeam.abbrev;
+  awayButton.dataset.team = String(playData.awayTeam.id);
+  awayButton.style.setProperty(
+    "--filter-color",
+    TEAM_COLORS[playData.awayTeam.abbrev] || "#ffffff"
+  );
+
+  homeButton.textContent = playData.homeTeam.abbrev;
+  homeButton.dataset.team = String(playData.homeTeam.id);
+  homeButton.style.setProperty(
+    "--filter-color",
+    TEAM_COLORS[playData.homeTeam.abbrev] || "#ffffff"
+  );
+
+  allButton.style.setProperty("--filter-color", "#ffffff");
+
+  const buttons = [allButton, awayButton, homeButton];
+
+  for (const button of buttons) {
+    button.onclick = () => {
+      const selectedTeam = button.dataset.team;
+      const markers = [
+        ...document.querySelectorAll("#shotMarkers .map-event")
+      ];
+
+      let visibleCount = 0;
+
+      for (const marker of markers) {
+        const shouldShow =
+          selectedTeam === "all" ||
+          marker.dataset.teamId === selectedTeam;
+
+        marker.style.display = shouldShow ? "" : "none";
+
+        if (shouldShow) {
+          visibleCount += 1;
+        }
+      }
+
+      for (const filterButton of buttons) {
+        filterButton.classList.toggle(
+          "active",
+          filterButton === button
+        );
+      }
+
+      const selectedName =
+        selectedTeam === "all"
+          ? "all teams"
+          : button.textContent;
+
+      detailsBox.textContent =
+        `${visibleCount} shot events shown for ${selectedName}.`;
+    };
+  }
+}
+
+
 function displayShotMap(playData) {
   const markerGroup = document.querySelector("#shotMarkers");
   const detailsBox = document.querySelector("#shotMapDetails");
@@ -467,6 +534,7 @@ function displayShotMap(playData) {
     }[shot.typeDescKey];
 
     marker.setAttribute("class", `map-event ${className}`);
+    marker.dataset.teamId = String(details.eventOwnerTeamId);
     marker.setAttribute("tabindex", "0");
     marker.setAttribute(
       "aria-label",
@@ -501,10 +569,12 @@ function displayShotMap(playData) {
   if (shots.length === 0) {
     detailsBox.textContent =
       "Shot locations will appear after the game begins.";
-  } else {
+    } else {
     detailsBox.textContent =
       `${shots.length} shot events plotted. Select a marker for details.`;
   }
+
+  setupTeamFilters(playData);
 }
 
 

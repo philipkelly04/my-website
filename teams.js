@@ -63,7 +63,7 @@
       select.add(new Option(name, code));
     });
 
-  select.value = "TOR";
+  select.value = "NJD";
   select.disabled = false;
 
   function renderSchedule(data, selectedTeam) {

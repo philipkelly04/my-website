@@ -232,6 +232,284 @@ function showError(message) {
   errorMessage.hidden = false;
 }
 
+function createPlayerLookup(playData) {
+  return new Map(
+    (playData.rosterSpots || []).map(player => [
+      player.playerId,
+      `${player.firstName?.default || ""} ${player.lastName?.default || ""}`.trim()
+    ])
+  );
+}
+
+function playerName(players, playerId) {
+  return players.get(playerId) || "Unknown player";
+}
+
+function periodName(play) {
+  const number = play.periodDescriptor?.number;
+  const type = play.periodDescriptor?.periodType;
+
+  if (type === "OT") return "Overtime";
+  if (type === "SO") return "Shootout";
+
+  return `Period ${number}`;
+}
+
+function strengthLabel(play, playData) {
+  const code = String(play.situationCode || "");
+
+  if (code.length !== 4) return "";
+
+  const awaySkaters = Number(code[1]);
+  const homeSkaters = Number(code[2]);
+  const awayGoalie = Number(code[0]);
+  const homeGoalie = Number(code[3]);
+  const ownerId = play.details?.eventOwnerTeamId;
+
+  if (ownerId === playData.awayTeam.id) {
+    if (homeGoalie === 0) return "EN";
+    if (awaySkaters > homeSkaters) return "PP";
+    if (awaySkaters < homeSkaters) return "SH";
+  }
+
+  if (ownerId === playData.homeTeam.id) {
+    if (awayGoalie === 0) return "EN";
+    if (homeSkaters > awaySkaters) return "PP";
+    if (homeSkaters < awaySkaters) return "SH";
+  }
+
+  return "";
+}
+
+function displayScoringSummary(playData) {
+  const container = document.querySelector("#scoringSummary");
+  const players = createPlayerLookup(playData);
+
+  const goals = playData.plays.filter(
+    play => play.typeDescKey === "goal"
+  );
+
+  container.replaceChildren();
+
+  if (goals.length === 0) {
+    const message = document.createElement("p");
+    message.className = "stats-message";
+    message.textContent = "No goals have been recorded.";
+    container.appendChild(message);
+    return;
+  }
+
+  let previousPeriod = null;
+
+  for (const goal of goals) {
+    const details = goal.details || {};
+    const currentPeriod = periodName(goal);
+
+    if (currentPeriod !== previousPeriod) {
+      const heading = document.createElement("h3");
+      heading.className = "scoring-period";
+      heading.textContent = currentPeriod;
+      container.appendChild(heading);
+      previousPeriod = currentPeriod;
+    }
+
+    const scoringTeam =
+      details.eventOwnerTeamId === playData.awayTeam.id
+        ? playData.awayTeam
+        : playData.homeTeam;
+
+    const play = document.createElement("div");
+    play.className = "scoring-play";
+
+    const time = document.createElement("div");
+    time.className = "scoring-time";
+    time.textContent = goal.timeInPeriod || "—";
+
+    const logo = document.createElement("img");
+    logo.className = "scoring-logo";
+    logo.src = scoringTeam.logo;
+    logo.alt = `${scoringTeam.abbrev} logo`;
+
+    const description = document.createElement("div");
+
+    const scorer = document.createElement("p");
+    scorer.className = "scoring-player";
+    scorer.textContent =
+      `${playerName(players, details.scoringPlayerId)} ` +
+      `(${details.scoringPlayerTotal ?? "—"})`;
+
+    const label = strengthLabel(goal, playData);
+
+    if (label) {
+      const badge = document.createElement("span");
+      badge.className = "scoring-label";
+      badge.textContent = label;
+      scorer.appendChild(badge);
+    }
+
+    const assists = [];
+
+    if (details.assist1PlayerId) {
+      assists.push(
+        `${playerName(players, details.assist1PlayerId)} ` +
+        `(${details.assist1PlayerTotal ?? "—"})`
+      );
+    }
+
+    if (details.assist2PlayerId) {
+      assists.push(
+        `${playerName(players, details.assist2PlayerId)} ` +
+        `(${details.assist2PlayerTotal ?? "—"})`
+      );
+    }
+
+    const assistText = document.createElement("p");
+    assistText.className = "scoring-assists";
+    assistText.textContent = assists.length
+      ? `Assists: ${assists.join(", ")}`
+      : "Unassisted";
+
+    description.append(scorer, assistText);
+
+    if (details.highlightClipSharingUrl) {
+      const highlight = document.createElement("a");
+      highlight.href = details.highlightClipSharingUrl;
+      highlight.target = "_blank";
+      highlight.rel = "noopener noreferrer";
+      highlight.textContent = "Watch goal";
+      highlight.className = "goal-highlight";
+      description.appendChild(highlight);
+    }
+
+    const score = document.createElement("div");
+    score.className = "scoring-score";
+    score.textContent =
+      `${playData.awayTeam.abbrev} ${details.awayScore ?? 0} – ` +
+      `${playData.homeTeam.abbrev} ${details.homeScore ?? 0}`;
+
+    play.append(time, logo, description, score);
+    container.appendChild(play);
+  }
+}
+
+function eventDisplayName(type) {
+  const names = {
+    goal: "Goal",
+    "shot-on-goal": "Shot on goal",
+    "missed-shot": "Missed shot",
+    "blocked-shot": "Blocked shot"
+  };
+
+  return names[type] || "Shot";
+}
+
+function eventPlayerId(play) {
+  if (play.typeDescKey === "goal") {
+    return play.details?.scoringPlayerId;
+  }
+
+  return play.details?.shootingPlayerId;
+}
+
+function displayShotMap(playData) {
+  const markerGroup = document.querySelector("#shotMarkers");
+  const detailsBox = document.querySelector("#shotMapDetails");
+  const players = createPlayerLookup(playData);
+  const svgNamespace = "http://www.w3.org/2000/svg";
+
+  const supportedEvents = new Set([
+    "goal",
+    "shot-on-goal",
+    "missed-shot",
+    "blocked-shot"
+  ]);
+
+  const shots = playData.plays.filter(play => {
+    return (
+      supportedEvents.has(play.typeDescKey) &&
+      Number.isFinite(play.details?.xCoord) &&
+      Number.isFinite(play.details?.yCoord)
+    );
+  });
+
+  markerGroup.replaceChildren();
+
+  for (const shot of shots) {
+    const details = shot.details;
+    const x = details.xCoord + 100;
+    const y = 42.5 - details.yCoord;
+
+    const team =
+      details.eventOwnerTeamId === playData.awayTeam.id
+        ? playData.awayTeam
+        : playData.homeTeam;
+
+    const shooter = playerName(players, eventPlayerId(shot));
+    const eventName = eventDisplayName(shot.typeDescKey);
+    const shotType = details.shotType
+      ? details.shotType.replaceAll("-", " ")
+      : "";
+
+    const marker = document.createElementNS(svgNamespace, "circle");
+
+    marker.setAttribute("cx", x);
+    marker.setAttribute("cy", y);
+    marker.setAttribute(
+      "r",
+      shot.typeDescKey === "goal" ? "2.4" : "1.35"
+    );
+
+    const className = {
+      goal: "map-goal",
+      "shot-on-goal": "map-shot",
+      "missed-shot": "map-miss",
+      "blocked-shot": "map-block"
+    }[shot.typeDescKey];
+
+    marker.setAttribute("class", `map-event ${className}`);
+    marker.setAttribute("tabindex", "0");
+    marker.setAttribute(
+      "aria-label",
+      `${team.abbrev} ${eventName} by ${shooter}`
+    );
+
+    const title = document.createElementNS(svgNamespace, "title");
+    title.textContent =
+      `${team.abbrev} • ${shooter} • ${eventName} • ` +
+      `${periodName(shot)} ${shot.timeInPeriod}`;
+
+    marker.appendChild(title);
+
+    const showDetails = () => {
+      detailsBox.textContent = [
+        team.abbrev,
+        shooter,
+        eventName,
+        shotType,
+        periodName(shot),
+        shot.timeInPeriod
+      ].filter(Boolean).join(" • ");
+    };
+
+    marker.addEventListener("click", showDetails);
+    marker.addEventListener("mouseenter", showDetails);
+    marker.addEventListener("focus", showDetails);
+
+    markerGroup.appendChild(marker);
+  }
+
+  if (shots.length === 0) {
+    detailsBox.textContent =
+      "Shot locations will appear after the game begins.";
+  } else {
+    detailsBox.textContent =
+      `${shots.length} shot events plotted. Select a marker for details.`;
+  }
+}
+
+
+
+
 async function loadGame() {
   const parameters = new URLSearchParams(window.location.search);
   const gameId = parameters.get("id");
@@ -242,17 +520,33 @@ async function loadGame() {
   }
 
   try {
-    const response = await fetch(
-      `/api/game?id=${encodeURIComponent(gameId)}`
-    );
+    const [gameResponse, playsResponse] = await Promise.all([
+      fetch(`/api/game?id=${encodeURIComponent(gameId)}`),
+      fetch(`/api/plays?id=${encodeURIComponent(gameId)}`)
+    ]);
 
-    const game = await response.json();
+    const game = await gameResponse.json();
 
-    if (!response.ok) {
+    if (!gameResponse.ok) {
       throw new Error(game.error || "Unable to load this game.");
     }
 
     displayGame(game);
+
+    if (playsResponse.ok) {
+      const playData = await playsResponse.json();
+      displayScoringSummary(playData);
+      displayShotMap(playData);
+    } else {
+      const scoringSummary = document.querySelector("#scoringSummary");
+      const shotDetails = document.querySelector("#shotMapDetails");
+
+      scoringSummary.innerHTML =
+        '<p class="stats-message">Scoring details are unavailable.</p>';
+
+      shotDetails.textContent =
+        "Shot locations are currently unavailable.";
+    }
   } catch (error) {
     console.error("Game Center error:", error);
     showError(error.message || "Unable to load this game.");

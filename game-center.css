@@ -474,3 +474,38 @@ tbody tr:hover {
     font-size: 1rem;
   }
 }
+.team-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.team-filter {
+  padding: 9px 16px;
+  color: var(--text);
+  background: #0d1015;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.team-filter:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.team-filter.active {
+  border-color: var(--filter-color, #ffffff);
+  box-shadow: 0 0 0 2px var(--filter-color, #ffffff);
+}
+
+.team-filter:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}

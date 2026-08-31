@@ -229,3 +229,248 @@ tbody tr:hover {
     font-size: 0.85rem;
   }
 }
+.scoring-section,
+.shot-map-section {
+  margin-top: 34px;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.scoring-section h2,
+.shot-map-section h2 {
+  margin-top: 0;
+}
+
+.scoring-summary {
+  display: grid;
+  gap: 12px;
+}
+
+.scoring-period {
+  margin: 12px 0 2px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.scoring-play {
+  display: grid;
+  grid-template-columns: 70px 48px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.scoring-time {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.scoring-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.scoring-player {
+  margin: 0 0 4px;
+  font-weight: 800;
+}
+
+.scoring-assists {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.scoring-score {
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.scoring-label {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 6px;
+  color: #111111;
+  background: #f5c542;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  vertical-align: middle;
+}
+
+.stats-message {
+  color: var(--muted);
+  text-align: center;
+}
+
+.shot-map-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.shot-map-heading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+}
+
+.shot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.shot-legend > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-marker {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+}
+
+.shot-marker {
+  background: #2563eb;
+  border-radius: 50%;
+}
+
+.goal-marker {
+  background: #e11d48;
+  border: 2px solid #ffd700;
+  border-radius: 50%;
+}
+
+.miss-marker {
+  background: #8b95a5;
+  transform: rotate(45deg);
+}
+
+.block-marker {
+  background: #8b5cf6;
+  border-radius: 2px;
+}
+
+.rink-wrapper {
+  overflow-x: auto;
+  padding: 10px;
+  background: #cfd8e3;
+  border-radius: 14px;
+}
+
+.shot-map {
+  display: block;
+  width: 100%;
+  min-width: 620px;
+  height: auto;
+}
+
+.rink-surface {
+  fill: #f7fbff;
+  stroke: #d4202f;
+  stroke-width: 1.2;
+}
+
+.goal-line,
+.centre-line {
+  stroke: #d4202f;
+  stroke-width: 0.7;
+}
+
+.centre-line {
+  stroke-dasharray: 2 1;
+}
+
+.blue-line {
+  stroke: #1659a7;
+  stroke-width: 1.4;
+}
+
+.faceoff-circle {
+  fill: none;
+  stroke: #d4202f;
+  stroke-width: 0.6;
+}
+
+.faceoff-dot {
+  fill: #d4202f;
+}
+
+.goal-crease {
+  fill: #b8dff5;
+  stroke: #d4202f;
+  stroke-width: 0.6;
+}
+
+.map-event {
+  cursor: pointer;
+  stroke: #111111;
+  stroke-width: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.map-event:hover,
+.map-event:focus {
+  opacity: 0.65;
+  outline: none;
+}
+
+.map-shot {
+  fill: #2563eb;
+}
+
+.map-goal {
+  fill: #e11d48;
+  stroke: #ffd700;
+  stroke-width: 1;
+}
+
+.map-miss {
+  fill: #8b95a5;
+}
+
+.map-block {
+  fill: #8b5cf6;
+}
+
+.shot-map-details {
+  min-height: 48px;
+  margin-top: 14px;
+  padding: 13px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9px;
+}
+
+@media (max-width: 700px) {
+  .shot-map-heading {
+    flex-direction: column;
+  }
+
+  .scoring-play {
+    grid-template-columns: 54px 38px 1fr;
+  }
+
+  .scoring-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .scoring-score {
+    grid-column: 3;
+    font-size: 1rem;
+  }
+}

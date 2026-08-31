@@ -75,7 +75,7 @@ async function loadGames() {
       const home = game.homeTeam || {};
 
       return `
-        return `
+        
         <a
           class="game-card"
           href="/game.html?id=${encodeURIComponent(game.id)}"

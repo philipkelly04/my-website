@@ -826,3 +826,25 @@ body {
     font-size: 2rem;
   }
 }
+.brand-panel {
+  display: grid;
+  place-items: center;
+  min-height: clamp(280px, 45vw, 520px);
+  padding: clamp(35px, 7vw, 80px);
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(0, 102, 170, 0.2),
+      transparent 58%
+    ),
+    #090b10;
+}
+
+.brand-logo {
+  display: block;
+  width: min(100%, 980px);
+  height: auto;
+  max-height: 370px;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.45));
+}

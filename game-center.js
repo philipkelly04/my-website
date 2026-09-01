@@ -522,6 +522,440 @@ function formatControlTime(totalSeconds) {
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
 }
 
+
+function fingerprintPercentage(value) {
+  if (!Number.isFinite(value)) return "—";
+
+  return `${value.toFixed(1)}%`;
+}
+
+function attemptDistance(play) {
+  const x = play.details?.xCoord;
+  const y = play.details?.yCoord;
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return null;
+  }
+
+  const distanceFromGoalLine = 89 - Math.abs(x);
+
+  return Math.hypot(distanceFromGoalLine, y);
+}
+
+function isSlotAttempt(play) {
+  const distance = attemptDistance(play);
+  const y = play.details?.yCoord;
+
+  return (
+    Number.isFinite(distance) &&
+    Number.isFinite(y) &&
+    distance <= 25 &&
+    Math.abs(y) <= 22
+  );
+}
+
+function calculateFingerprint(playData, teamId) {
+  const attemptTypes = new Set([
+    "goal",
+    "shot-on-goal",
+    "missed-shot",
+    "blocked-shot"
+  ]);
+
+  const attempts = (playData.plays || []).filter(play => {
+    return (
+      attemptTypes.has(play.typeDescKey) &&
+      play.details?.eventOwnerTeamId === teamId &&
+      play.periodDescriptor?.periodType !== "SO"
+    );
+  });
+
+  const unblocked = attempts.filter(
+    play => play.typeDescKey !== "blocked-shot"
+  );
+
+  const shotsOnGoal = attempts.filter(play => {
+    return (
+      play.typeDescKey === "goal" ||
+      play.typeDescKey === "shot-on-goal"
+    );
+  });
+
+  const goals = attempts.filter(
+    play => play.typeDescKey === "goal"
+  ).length;
+
+  const distances = attempts
+    .map(attemptDistance)
+    .filter(Number.isFinite);
+
+  const blockedEvents = (playData.plays || []).filter(play => {
+    return (
+      play.typeDescKey === "blocked-shot" &&
+      play.details?.eventOwnerTeamId !== teamId
+    );
+  });
+
+  return {
+    attempts: attempts.length,
+    unblocked: unblocked.length,
+    slotAttempts: attempts.filter(isSlotAttempt).length,
+    averageDistance: distances.length
+      ? distances.reduce((total, value) => total + value, 0) /
+        distances.length
+      : null,
+    shootingPercentage: shotsOnGoal.length
+      ? (goals / shotsOnGoal.length) * 100
+      : 0,
+    blocks: blockedEvents.length
+  };
+}
+
+function addFingerprintMetric(container, options) {
+  const {
+    label,
+    awayValue,
+    homeValue,
+    awayComparison,
+    homeComparison,
+    awayBar,
+    homeBar,
+    better = "higher",
+    awayColor,
+    homeColor
+  } = options;
+
+  const row = document.createElement("div");
+  row.className = "fingerprint-row";
+
+  const values = document.createElement("div");
+  values.className = "fingerprint-values";
+
+  const away = document.createElement("div");
+  away.className = "fingerprint-value";
+  away.textContent = awayValue;
+
+  const metricLabel = document.createElement("div");
+  metricLabel.className = "fingerprint-metric-label";
+  metricLabel.textContent = label;
+
+  const home = document.createElement("div");
+  home.className = "fingerprint-value";
+  home.textContent = homeValue;
+
+  if (
+    better &&
+    Number.isFinite(awayComparison) &&
+    Number.isFinite(homeComparison) &&
+    awayComparison !== homeComparison
+  ) {
+    const awayAdvantage =
+      better === "lower"
+        ? awayComparison < homeComparison
+        : awayComparison > homeComparison;
+
+    if (awayAdvantage) {
+      away.classList.add("advantage");
+    } else {
+      home.classList.add("advantage");
+    }
+  }
+
+  values.append(away, metricLabel, home);
+  row.appendChild(values);
+
+  if (
+    Number.isFinite(awayBar) &&
+    Number.isFinite(homeBar) &&
+    awayBar + homeBar > 0
+  ) {
+    const total = awayBar + homeBar;
+    const bar = document.createElement("div");
+    bar.className = "fingerprint-bar";
+
+    const awayFill = document.createElement("span");
+    awayFill.className = "fingerprint-fill";
+    awayFill.style.width = `${(awayBar / total) * 100}%`;
+    awayFill.style.background = awayColor;
+
+    const homeFill = document.createElement("span");
+    homeFill.className = "fingerprint-fill";
+    homeFill.style.width = `${(homeBar / total) * 100}%`;
+    homeFill.style.background = homeColor;
+
+    bar.append(awayFill, homeFill);
+    row.appendChild(bar);
+  }
+
+  container.appendChild(row);
+}
+
+function fingerprintPeriodName(play) {
+  const number = play.periodDescriptor?.number;
+  const type = play.periodDescriptor?.periodType;
+
+  if (type === "OT") {
+    return number === 4 ? "Overtime" : `${number - 3}OT`;
+  }
+
+  return `Period ${number}`;
+}
+
+function displayPeriodControl(
+  playData,
+  attempts,
+  awayColor,
+  homeColor
+) {
+  const container = document.querySelector("#periodControlRows");
+  container.replaceChildren();
+
+  const periods = new Map();
+
+  for (const play of attempts) {
+    const number = play.periodDescriptor?.number;
+
+    if (!number) continue;
+
+    if (!periods.has(number)) {
+      periods.set(number, {
+        label: fingerprintPeriodName(play),
+        away: 0,
+        home: 0
+      });
+    }
+
+    const period = periods.get(number);
+
+    if (
+      play.details?.eventOwnerTeamId === playData.awayTeam.id
+    ) {
+      period.away += 1;
+    }
+
+    if (
+      play.details?.eventOwnerTeamId === playData.homeTeam.id
+    ) {
+      period.home += 1;
+    }
+  }
+
+  if (periods.size === 0) {
+    const message = document.createElement("p");
+    message.className = "stats-message";
+    message.textContent =
+      "Period control will appear after the game begins.";
+
+    container.appendChild(message);
+    return;
+  }
+
+  for (const period of periods.values()) {
+    const total = period.away + period.home;
+    const awayShare = total ? (period.away / total) * 100 : 50;
+    const homeShare = total ? (period.home / total) * 100 : 50;
+
+    const row = document.createElement("div");
+    row.className = "period-control-row";
+
+    const label = document.createElement("span");
+    label.className = "period-control-label";
+    label.textContent = period.label;
+
+    const bar = document.createElement("div");
+    bar.className = "period-control-bar";
+
+    const awayFill = document.createElement("span");
+    awayFill.className = "period-control-fill";
+    awayFill.style.width = `${awayShare}%`;
+    awayFill.style.background = awayColor;
+
+    const homeFill = document.createElement("span");
+    homeFill.className = "period-control-fill";
+    homeFill.style.width = `${homeShare}%`;
+    homeFill.style.background = homeColor;
+
+    bar.append(awayFill, homeFill);
+
+    const result = document.createElement("span");
+    result.className = "period-control-result";
+
+    if (period.away === period.home) {
+      result.textContent = "Even";
+    } else if (period.away > period.home) {
+      result.textContent =
+        `${playData.awayTeam.abbrev} ${awayShare.toFixed(0)}%`;
+    } else {
+      result.textContent =
+        `${playData.homeTeam.abbrev} ${homeShare.toFixed(0)}%`;
+    }
+
+    row.append(label, bar, result);
+    container.appendChild(row);
+  }
+}
+
+function displayGameFingerprint(playData) {
+  const container = document.querySelector("#fingerprintMetrics");
+  const awayTeam = playData.awayTeam;
+  const homeTeam = playData.homeTeam;
+
+  const awayColor =
+    TEAM_COLORS[awayTeam.abbrev] || "#555555";
+
+  const homeColor =
+    TEAM_COLORS[homeTeam.abbrev] || "#222222";
+
+  const awayLogo =
+    document.querySelector("#awayFingerprintLogo");
+
+  const homeLogo =
+    document.querySelector("#homeFingerprintLogo");
+
+  awayLogo.src = awayTeam.logo;
+  awayLogo.alt = `${awayTeam.abbrev} logo`;
+
+  homeLogo.src = homeTeam.logo;
+  homeLogo.alt = `${homeTeam.abbrev} logo`;
+
+  setText("#awayFingerprintName", awayTeam.abbrev);
+  setText("#homeFingerprintName", homeTeam.abbrev);
+
+  const attemptTypes = new Set([
+    "goal",
+    "shot-on-goal",
+    "missed-shot",
+    "blocked-shot"
+  ]);
+
+  const attempts = (playData.plays || []).filter(play => {
+    return (
+      attemptTypes.has(play.typeDescKey) &&
+      play.periodDescriptor?.periodType !== "SO"
+    );
+  });
+
+  container.replaceChildren();
+
+  if (attempts.length === 0) {
+    const message = document.createElement("p");
+    message.className = "stats-message";
+    message.textContent =
+      "Game Fingerprint will appear after puck drop.";
+
+    container.appendChild(message);
+
+    displayPeriodControl(
+      playData,
+      attempts,
+      awayColor,
+      homeColor
+    );
+
+    return;
+  }
+
+  const away = calculateFingerprint(playData, awayTeam.id);
+  const home = calculateFingerprint(playData, homeTeam.id);
+
+  const attemptTotal = away.attempts + home.attempts;
+  const unblockedTotal = away.unblocked + home.unblocked;
+
+  const awayAttemptShare =
+    attemptTotal ? (away.attempts / attemptTotal) * 100 : 0;
+
+  const homeAttemptShare =
+    attemptTotal ? (home.attempts / attemptTotal) * 100 : 0;
+
+  const awayUnblockedShare =
+    unblockedTotal ? (away.unblocked / unblockedTotal) * 100 : 0;
+
+  const homeUnblockedShare =
+    unblockedTotal ? (home.unblocked / unblockedTotal) * 100 : 0;
+
+  addFingerprintMetric(container, {
+    label: "Shot-attempt share",
+    awayValue: fingerprintPercentage(awayAttemptShare),
+    homeValue: fingerprintPercentage(homeAttemptShare),
+    awayComparison: awayAttemptShare,
+    homeComparison: homeAttemptShare,
+    awayBar: awayAttemptShare,
+    homeBar: homeAttemptShare,
+    awayColor,
+    homeColor
+  });
+
+  addFingerprintMetric(container, {
+    label: "Unblocked-attempt share",
+    awayValue: fingerprintPercentage(awayUnblockedShare),
+    homeValue: fingerprintPercentage(homeUnblockedShare),
+    awayComparison: awayUnblockedShare,
+    homeComparison: homeUnblockedShare,
+    awayBar: awayUnblockedShare,
+    homeBar: homeUnblockedShare,
+    awayColor,
+    homeColor
+  });
+
+  addFingerprintMetric(container, {
+    label: "Slot attempts",
+    awayValue: away.slotAttempts,
+    homeValue: home.slotAttempts,
+    awayComparison: away.slotAttempts,
+    homeComparison: home.slotAttempts,
+    awayBar: away.slotAttempts,
+    homeBar: home.slotAttempts,
+    awayColor,
+    homeColor
+  });
+
+  addFingerprintMetric(container, {
+    label: "Average attempt distance",
+    awayValue: Number.isFinite(away.averageDistance)
+      ? `${away.averageDistance.toFixed(1)} ft`
+      : "—",
+    homeValue: Number.isFinite(home.averageDistance)
+      ? `${home.averageDistance.toFixed(1)} ft`
+      : "—",
+    awayComparison: away.averageDistance,
+    homeComparison: home.averageDistance,
+    better: "lower",
+    awayColor,
+    homeColor
+  });
+
+  addFingerprintMetric(container, {
+    label: "Shooting percentage",
+    awayValue: fingerprintPercentage(away.shootingPercentage),
+    homeValue: fingerprintPercentage(home.shootingPercentage),
+    awayComparison: away.shootingPercentage,
+    homeComparison: home.shootingPercentage,
+    awayBar: away.shootingPercentage,
+    homeBar: home.shootingPercentage,
+    awayColor,
+    homeColor
+  });
+
+  addFingerprintMetric(container, {
+    label: "Blocked shots",
+    awayValue: away.blocks,
+    homeValue: home.blocks,
+    awayBar: away.blocks,
+    homeBar: home.blocks,
+    better: null,
+    awayColor,
+    homeColor
+  });
+
+  displayPeriodControl(
+    playData,
+    attempts,
+    awayColor,
+    homeColor
+  );
+}
+
+
 function displayGameControl(playData) {
   const segmentsContainer =
     document.querySelector("#controlSegments");
@@ -1043,6 +1477,7 @@ async function loadGame() {
     if (playsResponse.ok) {
       const playData = await playsResponse.json();
       displayGameControl(playData);
+displayGameFingerprint(playData);
 displayScoringSummary(playData);
 displayShotMap(playData);
     } else {

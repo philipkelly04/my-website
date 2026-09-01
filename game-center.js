@@ -451,6 +451,273 @@ function strengthLabel(play, playData) {
   return "";
 }
 
+
+function clockToSeconds(clock = "00:00") {
+  const [minutes, seconds] = clock.split(":").map(Number);
+
+  return (minutes || 0) * 60 + (seconds || 0);
+}
+
+function playTimeInSeconds(play, game) {
+  const period = play.periodDescriptor?.number || 1;
+  const periodType = play.periodDescriptor?.periodType;
+
+  if (periodType === "SO") return null;
+
+  const elapsed = clockToSeconds(play.timeInPeriod);
+
+  if (period <= 3) {
+    return ((period - 1) * 20 * 60) + elapsed;
+  }
+
+  const overtimeLength = game.gameType === 2
+    ? 5 * 60
+    : 20 * 60;
+
+  return (
+    (3 * 20 * 60) +
+    ((period - 4) * overtimeLength) +
+    elapsed
+  );
+}
+
+function gameLengthInSeconds(game) {
+  const playableEvents = (game.plays || [])
+    .map(play => playTimeInSeconds(play, game))
+    .filter(Number.isFinite);
+
+  const latestEvent = playableEvents.length
+    ? Math.max(...playableEvents)
+    : 0;
+
+  const finalGame =
+    game.gameState === "FINAL" ||
+    game.gameState === "OFF";
+
+  const finishType = game.gameOutcome?.lastPeriodType;
+
+  if (finalGame && finishType === "REG") {
+    return 60 * 60;
+  }
+
+  if (finalGame && finishType === "SO") {
+    return 65 * 60;
+  }
+
+  return latestEvent;
+}
+
+function gameLeader(awayScore, homeScore) {
+  if (awayScore > homeScore) return "away";
+  if (homeScore > awayScore) return "home";
+
+  return "tied";
+}
+
+function formatControlTime(totalSeconds) {
+  const seconds = Math.max(0, Math.round(totalSeconds));
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+function displayGameControl(playData) {
+  const segmentsContainer =
+    document.querySelector("#controlSegments");
+
+  const markersContainer =
+    document.querySelector("#controlMarkers");
+
+  const result = document.querySelector("#controlResult");
+  const controlBar = document.querySelector("#controlBar");
+
+  const away = playData.awayTeam;
+  const home = playData.homeTeam;
+
+  const awayColor = TEAM_COLORS[away.abbrev] || "#555555";
+  const homeColor = TEAM_COLORS[home.abbrev] || "#222222";
+  const tiedColor = "#747b85";
+
+  setText("#awayControlName", away.abbrev);
+  setText("#homeControlName", home.abbrev);
+  setText("#awayLeadLabel", `${away.abbrev} leading`);
+  setText("#homeLeadLabel", `${home.abbrev} leading`);
+
+  document.querySelector("#awayControlSwatch").style.background =
+    awayColor;
+
+  document.querySelector("#homeControlSwatch").style.background =
+    homeColor;
+
+  segmentsContainer.replaceChildren();
+  markersContainer.replaceChildren();
+
+  const totalGameTime = gameLengthInSeconds(playData);
+
+  if (!totalGameTime) {
+    result.textContent = "Available after puck drop";
+    controlBar.hidden = true;
+
+    setText("#awayLeadTime", "—");
+    setText("#tiedTime", "—");
+    setText("#homeLeadTime", "—");
+    setText("#leadChanges", "—");
+    setText("#largestLead", "—");
+
+    return;
+  }
+
+  controlBar.hidden = false;
+
+  const goals = (playData.plays || [])
+    .filter(play => {
+      return (
+        play.typeDescKey === "goal" &&
+        play.periodDescriptor?.periodType !== "SO"
+      );
+    })
+    .map(play => ({
+      play,
+      time: playTimeInSeconds(play, playData)
+    }))
+    .filter(goal => Number.isFinite(goal.time))
+    .sort((a, b) => a.time - b.time);
+
+  const segments = [];
+  const totals = {
+    away: 0,
+    tied: 0,
+    home: 0
+  };
+
+  let awayScore = 0;
+  let homeScore = 0;
+  let currentLeader = "tied";
+  let previousTime = 0;
+  let previousTeamLeader = null;
+  let leadChanges = 0;
+  let largestLeadAmount = 0;
+  let largestLeadTeam = null;
+
+  function addSegment(endTime) {
+    const duration = Math.max(0, endTime - previousTime);
+
+    if (duration > 0) {
+      segments.push({
+        leader: currentLeader,
+        duration
+      });
+
+      totals[currentLeader] += duration;
+    }
+
+    previousTime = endTime;
+  }
+
+  for (const goal of goals) {
+    addSegment(goal.time);
+
+    awayScore = goal.play.details?.awayScore ?? awayScore;
+    homeScore = goal.play.details?.homeScore ?? homeScore;
+
+    const newLeader = gameLeader(awayScore, homeScore);
+
+    if (newLeader !== "tied") {
+      if (
+        previousTeamLeader &&
+        previousTeamLeader !== newLeader
+      ) {
+        leadChanges += 1;
+      }
+
+      previousTeamLeader = newLeader;
+    }
+
+    const difference = Math.abs(awayScore - homeScore);
+
+    if (difference > largestLeadAmount) {
+      largestLeadAmount = difference;
+      largestLeadTeam = newLeader;
+    }
+
+    currentLeader = newLeader;
+  }
+
+  addSegment(totalGameTime);
+
+  const colours = {
+    away: awayColor,
+    tied: tiedColor,
+    home: homeColor
+  };
+
+  for (const segment of segments) {
+    const element = document.createElement("div");
+    element.className = "control-segment";
+
+    element.style.width =
+      `${(segment.duration / totalGameTime) * 100}%`;
+
+    element.style.background = colours[segment.leader];
+
+    element.title =
+      `${segment.leader} · ${formatControlTime(segment.duration)}`;
+
+    segmentsContainer.appendChild(element);
+  }
+
+  for (const goal of goals) {
+    const marker = document.createElement("span");
+    marker.className = "control-goal-marker";
+
+    marker.style.left =
+      `${(goal.time / totalGameTime) * 100}%`;
+
+    marker.title =
+      `Goal at ${formatControlTime(goal.time)}`;
+
+    markersContainer.appendChild(marker);
+  }
+
+  setText("#awayLeadTime", formatControlTime(totals.away));
+  setText("#tiedTime", formatControlTime(totals.tied));
+  setText("#homeLeadTime", formatControlTime(totals.home));
+  setText("#leadChanges", leadChanges);
+
+  if (largestLeadAmount > 0 && largestLeadTeam) {
+    const leadingTeam =
+      largestLeadTeam === "away"
+        ? away.abbrev
+        : home.abbrev;
+
+    setText(
+      "#largestLead",
+      `${leadingTeam} by ${largestLeadAmount}`
+    );
+  } else {
+    setText("#largestLead", "Tied");
+  }
+
+  if (totals.away > totals.home) {
+    result.textContent =
+      `${away.abbrev} led for ${formatControlTime(totals.away)}`;
+  } else if (totals.home > totals.away) {
+    result.textContent =
+      `${home.abbrev} led for ${formatControlTime(totals.home)}`;
+  } else {
+    result.textContent = "Even control time";
+  }
+
+  controlBar.setAttribute(
+    "aria-label",
+    `${away.abbrev} led for ${formatControlTime(totals.away)}. ` +
+    `The game was tied for ${formatControlTime(totals.tied)}. ` +
+    `${home.abbrev} led for ${formatControlTime(totals.home)}.`
+  );
+}
+
+
 function displayScoringSummary(playData) {
   const container = document.querySelector("#scoringSummary");
   const players = createPlayerLookup(playData);
@@ -775,8 +1042,9 @@ async function loadGame() {
 
     if (playsResponse.ok) {
       const playData = await playsResponse.json();
-      displayScoringSummary(playData);
-      displayShotMap(playData);
+      displayGameControl(playData);
+displayScoringSummary(playData);
+displayShotMap(playData);
     } else {
       const scoringSummary = document.querySelector("#scoringSummary");
       const shotDetails = document.querySelector("#shotMapDetails");

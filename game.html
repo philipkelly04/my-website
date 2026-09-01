@@ -72,6 +72,74 @@
         </div>
       </div>
 
+<section class="control-section" aria-labelledby="controlTitle">
+  <div class="control-heading">
+    <div>
+      <p class="control-label">PUCKLAB ANALYSIS</p>
+      <h2 id="controlTitle">Game Control</h2>
+    </div>
+
+    <p id="controlResult" class="control-result">
+      Calculating game flow…
+    </p>
+  </div>
+
+  <div
+    id="controlBar"
+    class="control-bar"
+    role="img"
+    aria-label="Timeline showing time tied and time each team led"
+  >
+    <div id="controlSegments" class="control-segments"></div>
+    <div id="controlMarkers" class="control-markers"></div>
+  </div>
+
+  <div class="control-legend">
+    <span>
+      <span id="awayControlSwatch" class="control-swatch"></span>
+      <strong id="awayControlName">Away</strong>
+    </span>
+
+    <span>
+      <span class="control-swatch tied-swatch"></span>
+      <strong>Tied</strong>
+    </span>
+
+    <span>
+      <span id="homeControlSwatch" class="control-swatch"></span>
+      <strong id="homeControlName">Home</strong>
+    </span>
+  </div>
+
+  <div class="control-metrics">
+    <div class="control-metric">
+      <span id="awayLeadTime" class="control-value">—</span>
+      <span id="awayLeadLabel">Away leading</span>
+    </div>
+
+    <div class="control-metric">
+      <span id="tiedTime" class="control-value">—</span>
+      <span>Time tied</span>
+    </div>
+
+    <div class="control-metric">
+      <span id="homeLeadTime" class="control-value">—</span>
+      <span id="homeLeadLabel">Home leading</span>
+    </div>
+
+    <div class="control-metric">
+      <span id="leadChanges" class="control-value">—</span>
+      <span>Lead changes</span>
+    </div>
+
+    <div class="control-metric">
+      <span id="largestLead" class="control-value">—</span>
+      <span>Largest lead</span>
+    </div>
+  </div>
+</section>
+
+      
 <section class="scoring-section">
   <h2>Scoring Summary</h2>
 

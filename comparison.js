@@ -157,6 +157,192 @@ function addStatRow({
   statsContainer.appendChild(row);
 }
 
+function h2hGameType(game) {
+  const types = {
+    1: "Preseason",
+    2: "Regular season",
+    3: "Playoffs"
+  };
+
+  let label = types[game.gameType] || "NHL game";
+  const finish = game.gameOutcome?.lastPeriodType;
+
+  if (finish === "OT") label += " · OT";
+  if (finish === "SO") label += " · Shootout";
+
+  return label;
+}
+
+function formatH2HDate(gameDate) {
+  if (!gameDate) return "Date unavailable";
+
+  const date = new Date(`${gameDate}T12:00:00`);
+
+  return date.toLocaleDateString([], {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  });
+}
+
+function createH2HTeamRow(team, won) {
+  const row = document.createElement("div");
+  row.className = won ? "h2h-team winner" : "h2h-team";
+
+  const logo = document.createElement("img");
+  logo.className = "h2h-logo";
+  logo.src =
+    team.logo ||
+    `https://assets.nhle.com/logos/nhl/svg/` +
+    `${team.abbrev}_light.svg`;
+
+  logo.alt = `${team.abbrev} logo`;
+
+  const name = document.createElement("span");
+  name.textContent = team.abbrev;
+
+  const score = document.createElement("strong");
+  score.className = "h2h-score";
+  score.textContent = team.score ?? "—";
+
+  row.append(logo, name, score);
+
+  return row;
+}
+
+function createH2HGameCard(game) {
+  const awayScore = Number(game.awayTeam?.score);
+  const homeScore = Number(game.homeTeam?.score);
+
+  const awayWon = awayScore > homeScore;
+  const homeWon = homeScore > awayScore;
+
+  const card = document.createElement("a");
+  card.className = "h2h-game";
+  card.href = `/game.html?id=${encodeURIComponent(game.id)}`;
+  card.setAttribute(
+    "aria-label",
+    `Open ${game.awayTeam.abbrev} versus ` +
+    `${game.homeTeam.abbrev} Game Center`
+  );
+
+  const meta = document.createElement("div");
+  meta.className = "h2h-meta";
+
+  const date = document.createElement("span");
+  date.className = "h2h-date";
+  date.textContent = formatH2HDate(game.gameDate);
+
+  const type = document.createElement("span");
+  type.className = "h2h-type";
+  type.textContent = h2hGameType(game);
+
+  meta.append(date, type);
+
+  const matchup = document.createElement("div");
+  matchup.className = "h2h-matchup";
+
+  matchup.append(
+    createH2HTeamRow(game.awayTeam, awayWon),
+    createH2HTeamRow(game.homeTeam, homeWon)
+  );
+
+  const open = document.createElement("span");
+  open.className = "h2h-open";
+  open.textContent = "Game Center →";
+
+  card.append(meta, matchup, open);
+
+  return card;
+}
+
+async function loadHeadToHead(teamOne, teamTwo) {
+  const container = document.querySelector("#h2hGames");
+  const summary = document.querySelector("#h2hSummary");
+
+  const abbreviationOne = teamAbbreviation(teamOne);
+  const abbreviationTwo = teamAbbreviation(teamTwo);
+  const season = teamOne.seasonId || teamTwo.seasonId;
+
+  container.replaceChildren();
+
+  const loading = document.createElement("p");
+  loading.className = "h2h-empty";
+  loading.textContent = "Loading the last 10 meetings…";
+  container.appendChild(loading);
+
+  summary.textContent = "Loading…";
+
+  try {
+    const parameters = new URLSearchParams({
+      team1: abbreviationOne,
+      team2: abbreviationTwo,
+      season: String(season)
+    });
+
+    const response = await fetch(
+      `/api/head-to-head?${parameters.toString()}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Unable to load head-to-head results."
+      );
+    }
+
+    const games = Array.isArray(data.games) ? data.games : [];
+
+    container.replaceChildren();
+
+    if (games.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "h2h-empty";
+      empty.textContent =
+        "No completed meetings were found between these teams.";
+
+      container.appendChild(empty);
+      summary.textContent = "No results";
+      return;
+    }
+
+    let teamOneWins = 0;
+    let teamTwoWins = 0;
+
+    for (const game of games) {
+      const awayWon =
+        Number(game.awayTeam.score) > Number(game.homeTeam.score);
+
+      const winner = awayWon
+        ? game.awayTeam.abbrev
+        : game.homeTeam.abbrev;
+
+      if (winner === abbreviationOne) teamOneWins += 1;
+      if (winner === abbreviationTwo) teamTwoWins += 1;
+
+      container.appendChild(createH2HGameCard(game));
+    }
+
+    summary.textContent =
+      `${abbreviationOne} ${teamOneWins} wins · ` +
+      `${abbreviationTwo} ${teamTwoWins} wins`;
+  } catch (error) {
+    console.error("Head-to-head error:", error);
+
+    container.replaceChildren();
+
+    const errorMessage = document.createElement("p");
+    errorMessage.className = "h2h-empty";
+    errorMessage.textContent =
+      error.message || "Head-to-head results are unavailable.";
+
+    container.appendChild(errorMessage);
+    summary.textContent = "Unavailable";
+  }
+}
+
+
 function displayComparison(teamOne, teamTwo) {
   setHeading("teamOne", teamOne);
   setHeading("teamTwo", teamTwo);
@@ -307,8 +493,10 @@ function displayComparison(teamOne, teamTwo) {
     better: "lower"
   });
 
-  message.hidden = true;
+    message.hidden = true;
   results.hidden = false;
+
+  loadHeadToHead(teamOne, teamTwo);
 }
 
 function compareSelectedTeams() {

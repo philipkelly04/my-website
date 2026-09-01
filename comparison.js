@@ -544,12 +544,12 @@ function populateTeamSelectors() {
     teamTwoSelect.appendChild(secondOption);
   }
 
-  if (standings.some(team => teamAbbreviation(team) === "CAR")) {
-    teamOneSelect.value = "CAR";
+  if (standings.some(team => teamAbbreviation(team) === "NJD")) {
+    teamOneSelect.value = "NJD";
   }
 
-  if (standings.some(team => teamAbbreviation(team) === "VGK")) {
-    teamTwoSelect.value = "VGK";
+  if (standings.some(team => teamAbbreviation(team) === "NYR")) {
+    teamTwoSelect.value = "NYR";
   }
 
   compareButton.disabled = false;

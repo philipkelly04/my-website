@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Matchup Lab | PuckLab</title>
+
+  <link rel="stylesheet" href="comparison.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <a href="/" class="back-link">← Back to PuckLab</a>
+    <span class="pucklab-name">PUCKLAB MATCHUP LAB</span>
+  </header>
+
+  <main class="comparison-container">
+    <section class="comparison-intro">
+      <p class="eyebrow">TEAM VS TEAM</p>
+      <h1>Matchup Lab</h1>
+
+      <p>
+        Select two NHL teams to compare their overall performance.
+      </p>
+    </section>
+
+    <section class="team-selector" aria-label="Choose two teams">
+      <div class="select-group">
+        <label for="teamOneSelect">Team One</label>
+
+        <select id="teamOneSelect">
+          <option value="">Select a team</option>
+        </select>
+      </div>
+
+      <div class="versus">VS</div>
+
+      <div class="select-group">
+        <label for="teamTwoSelect">Team Two</label>
+
+        <select id="teamTwoSelect">
+          <option value="">Select a team</option>
+        </select>
+      </div>
+
+      <button id="compareButton" type="button">
+        Compare Teams
+      </button>
+    </section>
+
+    <p id="comparisonMessage" class="comparison-message">
+      Loading NHL teams…
+    </p>
+
+    <section id="comparisonResults" hidden>
+      <div class="team-headings">
+        <article id="teamOneHeading" class="team-heading">
+          <img id="teamOneLogo" class="team-logo" alt="">
+          <h2 id="teamOneName"></h2>
+          <p id="teamOneRank"></p>
+        </article>
+
+        <div class="matchup-title">HEAD TO HEAD</div>
+
+        <article id="teamTwoHeading" class="team-heading">
+          <img id="teamTwoLogo" class="team-logo" alt="">
+          <h2 id="teamTwoName"></h2>
+          <p id="teamTwoRank"></p>
+        </article>
+      </div>
+
+      <div id="comparisonStats" class="comparison-stats"></div>
+    </section>
+  </main>
+
+  <script src="comparison.js"></script>
+</body>
+</html>

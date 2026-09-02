@@ -477,7 +477,11 @@ function displayPlayers(data) {
   defence.replaceChildren();
   goalies.replaceChildren();
 
-  for (const player of data.players || []) {
+  const players = sortByPpg
+  ? sortPlayersByPpg(data.players || [])
+  : (data.players || []);
+
+for (const player of players) {
     if (player.group === "Forwards") {
       forwards.appendChild(createSkaterCard(player));
     }

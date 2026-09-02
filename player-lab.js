@@ -335,7 +335,11 @@ function createSkaterCard(player) {
       {
         label: "SH%",
         value: formatPercent(career.shootingPctg)
-      }
+      },
+      {
+  label: "P/60",
+  value: "—"
+}
     ])
   );
 

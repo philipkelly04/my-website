@@ -36,7 +36,10 @@ const TEAM_COLORS = {
 const teamSelect = document.querySelector("#playerTeamSelect");
 const statusMessage = document.querySelector("#playerLabStatus");
 const results = document.querySelector("#playerLabResults");
+const sortPpgButton = document.querySelector("#sortPpgButton");
 
+let activePlayerData = null;
+let sortByPpg = false;
 let standings = [];
 
 function localized(value) {

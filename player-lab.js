@@ -519,6 +519,7 @@ function displayTeamSummary(data) {
 
 
 function displayPlayers(data) {
+    displayTeamSummary(data);
   const forwards = document.querySelector("#forwardsGrid");
   const defence = document.querySelector("#defenceGrid");
   const goalies = document.querySelector("#goaliesGrid");

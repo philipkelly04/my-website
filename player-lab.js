@@ -437,6 +437,37 @@ function createGoalieCard(player) {
   return card;
 }
 
+function currentPpg(player) {
+  const gamesPlayed = player.current?.gamesPlayed || 0;
+  const points = player.current?.points || 0;
+
+  return gamesPlayed > 0 ? points / gamesPlayed : -1;
+}
+
+function sortPlayersByPpg(players) {
+  const groupOrder = {
+    Forwards: 1,
+    Defence: 2,
+    Goalies: 3
+  };
+
+  return [...players].sort((a, b) => {
+    if (a.group !== b.group) {
+      return groupOrder[a.group] - groupOrder[b.group];
+    }
+
+    // Keep goalies in their normal order.
+    if (a.group === "Goalies") {
+      return (a.sweaterNumber || 999) - (b.sweaterNumber || 999);
+    }
+
+    return (
+      currentPpg(b) - currentPpg(a) ||
+      (a.sweaterNumber || 999) - (b.sweaterNumber || 999)
+    );
+  });
+}
+
 function displayPlayers(data) {
   const forwards = document.querySelector("#forwardsGrid");
   const defence = document.querySelector("#defenceGrid");

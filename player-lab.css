@@ -190,10 +190,20 @@ body {
 }
 
 .rate-stats {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px 13px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(58px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.rate-stat {
+  display: grid;
+  gap: 3px;
+  text-align: center;
+}
+
+.rate-stat strong {
+  display: block;
 }
 
 .rate-stat {

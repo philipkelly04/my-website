@@ -269,3 +269,6 @@ body {
     justify-content: flex-start;
   }
 }
+.player-lab-top-bar {
+  justify-content: center;
+}

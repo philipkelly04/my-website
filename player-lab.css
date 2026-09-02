@@ -276,8 +276,8 @@ body {
   }
 
   .rate-stats {
-    justify-content: flex-start;
-  }
+  grid-template-columns: repeat(3, minmax(58px, 1fr));
+}
 }
 .player-lab-top-bar {
   justify-content: center;

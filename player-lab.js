@@ -612,4 +612,21 @@ teamSelect.addEventListener("change", () => {
   loadTeam(teamSelect.value);
 });
 
+sortPpgButton.addEventListener("click", () => {
+  sortByPpg = !sortByPpg;
+
+  sortPpgButton.setAttribute(
+    "aria-pressed",
+    String(sortByPpg)
+  );
+
+  sortPpgButton.textContent = sortByPpg
+    ? "Sort by jersey number"
+    : "Sort by P/GP";
+
+  if (activePlayerData) {
+    displayPlayers(activePlayerData);
+  }
+});
+
 loadTeams();

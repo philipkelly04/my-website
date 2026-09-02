@@ -519,6 +519,14 @@ function displayTeamSummary(data) {
 
 
 function displayPlayers(data) {
+    const summaryReady =
+    document.querySelector("#teamGoalsPerGame") &&
+    document.querySelector("#teamShootingPercentage") &&
+    document.querySelector("#teamShotsPerGame");
+
+  if (summaryReady) {
+    displayTeamSummary(data);
+  }
   const forwards = document.querySelector("#forwardsGrid");
   const defence = document.querySelector("#defenceGrid");
   const goalies = document.querySelector("#goaliesGrid");

@@ -468,6 +468,56 @@ function sortPlayersByPpg(players) {
   });
 }
 
+function displayTeamSummary(data) {
+  const skaters = (data.players || []).filter(player => {
+    return (
+      player.group !== "Goalies" &&
+      Number.isFinite(player.current?.gamesPlayed) &&
+      player.current.gamesPlayed > 0
+    );
+  });
+
+  const goalsPerGame = skaters.reduce((total, player) => {
+    return total + (
+      rate(
+        player.current?.goals,
+        player.current?.gamesPlayed
+      ) || 0
+    );
+  }, 0);
+
+  const shotsPerGame = skaters.reduce((total, player) => {
+    return total + (
+      rate(
+        player.current?.shots,
+        player.current?.gamesPlayed
+      ) || 0
+    );
+  }, 0);
+
+  const totalGoals = skaters.reduce((total, player) => {
+    return total + (player.current?.goals || 0);
+  }, 0);
+
+  const totalShots = skaters.reduce((total, player) => {
+    return total + (player.current?.shots || 0);
+  }, 0);
+
+  const shootingPercentage =
+    totalShots > 0 ? totalGoals / totalShots : null;
+
+  document.querySelector("#teamGoalsPerGame").textContent =
+    skaters.length ? formatRate(goalsPerGame) : "—";
+
+  document.querySelector("#teamShotsPerGame").textContent =
+    skaters.length ? formatRate(shotsPerGame) : "—";
+
+  document.querySelector("#teamShootingPercentage").textContent =
+    formatPercent(shootingPercentage);
+}
+
+
+
 function displayPlayers(data) {
   const forwards = document.querySelector("#forwardsGrid");
   const defence = document.querySelector("#defenceGrid");

@@ -533,7 +533,9 @@ async function loadTeam(team) {
     document.querySelector("#selectedSeason").textContent =
       `${formatSeason(season)} regular-season rates`;
 
-    displayPlayers(data);
+    activePlayerData = data;
+sortPpgButton.disabled = false;
+displayPlayers(data);
 
     statusMessage.hidden = true;
     results.hidden = false;

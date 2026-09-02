@@ -308,3 +308,55 @@ body {
   cursor: not-allowed;
   opacity: 0.5;
 }
+.team-summary {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.team-summary h2 {
+  margin: 0 0 16px;
+  font-size: 1.3rem;
+}
+
+.team-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.team-summary-card {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+  text-align: center;
+  background: #0d1015;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--team-color);
+  border-radius: 10px;
+}
+
+.team-summary-card span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+}
+
+.team-summary-card strong {
+  color: var(--team-color);
+  font-size: 1.8rem;
+}
+
+.team-summary-card small {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+@media (max-width: 520px) {
+  .team-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

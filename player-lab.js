@@ -530,7 +530,7 @@ function populateTeams() {
 
   teamSelect.value = validRequestedTeam
     ? requestedTeam
-    : "TOR";
+    : "NJD";
 
   teamSelect.disabled = false;
   loadTeam(teamSelect.value);

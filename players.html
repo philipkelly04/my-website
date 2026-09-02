@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="PuckLab player performance analysis."
+  >
+
+  <title>Player Lab | PuckLab</title>
+
+  <link rel="stylesheet" href="player-lab.css">
+  <link rel="stylesheet" href="navigation.css">
+</head>
+
+<body>
+  <header class="top-bar">
+    <a href="/" class="top-brand" aria-label="PuckLab home">
+      <img src="/pucklab-logo-v3.png" alt="">
+    </a>
+
+    <nav class="top-links" aria-label="Primary navigation">
+      <a href="/">Home</a>
+
+      <a href="/game.html?id=2025030416">
+        Game Center
+      </a>
+
+      <a href="/compare.html">
+        Matchup Lab
+      </a>
+
+      <a href="/players.html" aria-current="page">
+        Player Lab
+      </a>
+    </nav>
+  </header>
+
+  <main class="player-lab-container">
+    <section class="player-lab-intro">
+      <p class="player-lab-label">PLAYER PERFORMANCE</p>
+      <h1>Player Lab</h1>
+
+      <p>
+        Compare current performance with each player’s career rate.
+      </p>
+    </section>
+
+    <section class="player-toolbar">
+      <label for="playerTeamSelect">Choose a team</label>
+
+      <select id="playerTeamSelect" disabled>
+        <option value="">Loading teams…</option>
+      </select>
+    </section>
+
+    <p id="playerLabStatus" class="player-lab-status" role="status">
+      Loading NHL teams…
+    </p>
+
+    <section id="playerLabResults" hidden>
+      <header class="selected-team">
+        <img id="selectedTeamLogo" alt="">
+
+        <div>
+          <p class="player-lab-label">CURRENT ROSTER</p>
+          <h2 id="selectedTeamName">Team</h2>
+          <p id="selectedSeason"></p>
+        </div>
+      </header>
+
+      <section class="player-group" aria-labelledby="forwardsTitle">
+        <h2 id="forwardsTitle">Forwards</h2>
+        <div id="forwardsGrid" class="player-grid"></div>
+      </section>
+
+      <section class="player-group" aria-labelledby="defenceTitle">
+        <h2 id="defenceTitle">Defence</h2>
+        <div id="defenceGrid" class="player-grid"></div>
+      </section>
+
+      <section class="player-group" aria-labelledby="goaliesTitle">
+        <h2 id="goaliesTitle">Goalies</h2>
+        <div id="goaliesGrid" class="player-grid"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="player-lab.js"></script>
+</body>
+</html>

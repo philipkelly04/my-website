@@ -342,6 +342,49 @@ async function loadHeadToHead(teamOne, teamTwo) {
   }
 }
 
+function createResilienceMetric(title, description, metric) {
+  const section = document.createElement("section");
+  section.className = "resilience-metric";
+
+  const heading = document.createElement("h4");
+  heading.textContent = title;
+
+  const explanation = document.createElement("p");
+  explanation.className = "resilience-note";
+  explanation.textContent = description;
+
+  const value = document.createElement("strong");
+  value.className = "resilience-value";
+
+  const record = document.createElement("p");
+  record.className = "resilience-record";
+
+  const opportunities = metric?.opportunities ?? 0;
+  const successes = metric?.successes ?? 0;
+
+  if (opportunities > 0) {
+    value.textContent =
+      `${Math.round((successes / opportunities) * 100)}%`;
+
+    record.textContent =
+      `${successes} of ${opportunities} qualifying games`;
+  } else {
+    value.textContent = "—";
+    record.textContent = "No qualifying games yet";
+  }
+
+  section.append(heading, explanation, value, record);
+
+  if (opportunities > 0 && opportunities < 10) {
+    const warning = document.createElement("span");
+    warning.className = "resilience-small-sample";
+    warning.textContent = "Small sample — fewer than 10 games";
+    section.appendChild(warning);
+  }
+
+  return section;
+}
+
 
 function displayComparison(teamOne, teamTwo) {
   setHeading("teamOne", teamOne);

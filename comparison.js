@@ -434,6 +434,76 @@ function createResilienceCard(team, data) {
   return card;
 }
 
+
+let resilienceRequestId = 0;
+
+// Explicit season: never fall back to older seasons.
+const RESILIENCE_SEASON = "20262027";
+
+async function loadResilience(teamOne, teamTwo) {
+  const container = document.querySelector("#resilienceCards");
+  const status = document.querySelector("#resilienceStatus");
+  const windowSelect = document.querySelector("#resilienceWindow");
+
+  if (!container || !status || !windowSelect) return;
+
+  const requestId = ++resilienceRequestId;
+  const selectedWindow = windowSelect.value;
+
+  container.replaceChildren();
+  status.textContent = "Loading comeback and lead-protection analysis…";
+
+  async function fetchTeamAnalysis(team) {
+    const parameters = new URLSearchParams({
+      team: teamAbbreviation(team),
+      season: RESILIENCE_SEASON,
+      window: selectedWindow
+    });
+
+    const response = await fetch(`/api/resilience?${parameters}`);
+    
+    if (!response.ok) {
+      throw new Error("Team analysis is temporarily unavailable.");
+    }
+
+    return response.json();
+  }
+
+  try {
+    const [dataOne, dataTwo] = await Promise.all([
+      fetchTeamAnalysis(teamOne),
+      fetchTeamAnalysis(teamTwo)
+    ]);
+
+    // Ignore an old response if another comparison has started.
+    if (requestId !== resilienceRequestId) return;
+
+    container.append(
+      createResilienceCard(teamOne, dataOne),
+      createResilienceCard(teamTwo, dataTwo)
+    );
+
+    const period = selectedWindow === "10"
+      ? "Last 10 completed games per team"
+      : "Season to date";
+
+    const noGames =
+      dataOne.gamesAnalysed === 0 &&
+      dataTwo.gamesAnalysed === 0;
+
+    status.textContent = noGames
+      ? "2026–27: awaiting completed regular-season games."
+      : `2026–27 regular season · ${period}.`;
+  } catch (error) {
+    if (requestId !== resilienceRequestId) return;
+
+    console.error("Resilience analysis:", error);
+    status.textContent =
+      "Analysis could not be loaded. Please try again shortly.";
+  }
+}
+
+
 function displayComparison(teamOne, teamTwo) {
   setHeading("teamOne", teamOne);
   setHeading("teamTwo", teamTwo);

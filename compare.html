@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="navigation.css">
 </head>
 
+<body>
 <header class="top-bar">
   <a href="/" class="top-brand">PUCKLAB</a>
 
@@ -90,6 +91,33 @@
       </div>
 
       <div id="comparisonStats" class="comparison-stats"></div>
+
+
+      <section class="resilience-section"
+         aria-labelledby="resilienceTitle">
+  <p class="eyebrow">COMEBACKS & LEAD PROTECTION</p>
+  <h2 id="resilienceTitle">Can They Hold It?</h2>
+
+  <p class="resilience-description">
+    How each team responds when ahead or behind.
+    Current-season regular-season games only.
+  </p>
+
+  <div class="resilience-toolbar">
+    <label for="resilienceWindow">Games to analyse</label>
+
+    <select id="resilienceWindow">
+      <option value="season">Season to date</option>
+      <option value="10">Last 10 games this season</option>
+    </select>
+  </div>
+
+  <p id="resilienceStatus" role="status">
+    Analysis will appear here once connected.
+  </p>
+
+  <div id="resilienceCards" class="resilience-grid"></div>
+</section>
 
 <section class="h2h-section" aria-labelledby="h2hTitle">
   <div class="h2h-heading">

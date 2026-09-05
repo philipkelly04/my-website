@@ -186,7 +186,7 @@ export default async function handler(request, response) {
 
     if (
       !Array.isArray(schedule.games) ||
-      String(schedule.season) !== season
+      String(schedule.currentSeason) !== season
     ) {
       throw new Error("Requested season schedule is unavailable");
     }

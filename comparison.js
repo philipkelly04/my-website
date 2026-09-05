@@ -386,6 +386,54 @@ function createResilienceMetric(title, description, metric) {
 }
 
 
+function createResilienceCard(team, data) {
+  const card = document.createElement("article");
+  card.className = "resilience-card";
+
+  card.style.setProperty(
+    "--team-color",
+    TEAM_COLORS[teamAbbreviation(team)] || "#69b3e7"
+  );
+
+  const heading = document.createElement("h3");
+  heading.textContent = teamDisplayName(team);
+
+  const note = document.createElement("p");
+  note.className = "resilience-note";
+  note.textContent =
+    `${data.gamesAnalysed ?? 0} completed games analysed`;
+
+  card.append(heading, note);
+
+  card.append(
+    createResilienceMetric(
+      "One-goal lead protection",
+      "Wins after entering the third period exactly one goal ahead.",
+      data.oneGoalProtection
+    ),
+
+    createResilienceMetric(
+      "Third-period rescue",
+      "Wins after entering the third period behind.",
+      data.thirdPeriodRescue
+    ),
+
+    createResilienceMetric(
+      "Multi-goal comebacks",
+      "Wins after trailing by two or more goals at any point.",
+      data.multiGoalComeback
+    ),
+
+    createResilienceMetric(
+      "Lead slips",
+      "Losses after holding a lead at any point. Lower is better.",
+      data.leadSlips
+    )
+  );
+
+  return card;
+}
+
 function displayComparison(teamOne, teamTwo) {
   setHeading("teamOne", teamOne);
   setHeading("teamTwo", teamTwo);

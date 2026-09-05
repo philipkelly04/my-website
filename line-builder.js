@@ -1,296 +1,417 @@
-:root {
-  --background: #0b0d10;
-  --panel: #15191f;
-  --border: #2a3039;
-  --text: #f5f7fa;
-  --muted: #aab2bf;
-  --team-color: #ce1126;
-  --gold: #f5c542;
+const LINE_COLORS = {
+  ANA: "#fc4c02", BOS: "#ffb81c", BUF: "#003087",
+  CAR: "#cc0000", CBJ: "#002654", CGY: "#d2001c",
+  CHI: "#cf0a2c", COL: "#6f263d", DAL: "#006847",
+  DET: "#ce1126", EDM: "#041e42", FLA: "#c8102e",
+  LAK: "#555555", MIN: "#154734", MTL: "#af1e2d",
+  NJD: "#ce1126", NSH: "#ffb81c", NYI: "#00539b",
+  NYR: "#0038a8", OTT: "#c52032", PHI: "#f74902",
+  PIT: "#fcb514", SEA: "#008099", SJS: "#006d75",
+  STL: "#002f87", TBL: "#002868", TOR: "#00205b",
+  UTA: "#69b3e7", VAN: "#00205b", VGK: "#b4975a",
+  WPG: "#041e42", WSH: "#c8102e"
+};
+
+const lineSlots = [
+  { id: "f1", label: "Forward 1", group: "Forwards" },
+  { id: "f2", label: "Forward 2", group: "Forwards" },
+  { id: "f3", label: "Forward 3", group: "Forwards" },
+  { id: "d1", label: "Defender 1", group: "Defence" },
+  { id: "d2", label: "Defender 2", group: "Defence" }
+];
+
+const byId = id => document.getElementById(id);
+
+const lineTeamSelect = byId("lineTeamSelect");
+const lineStatus = byId("lineStatus");
+const lineResults = byId("lineResults");
+const clearLineButton = byId("clearLineButton");
+
+let linePlayers = [];
+let lineTeams = [];
+let selections = {};
+let slotControls = {};
+let rosterRequest = 0;
+
+function makeElement(tag, className, text) {
+  const element = document.createElement(tag);
+
+  if (className) element.className = className;
+  if (text != null) element.textContent = text;
+
+  return element;
 }
 
-* {
-  box-sizing: border-box;
+function localText(value) {
+  return typeof value === "string"
+    ? value
+    : value?.default || "";
 }
 
-[hidden] {
-  display: none !important;
+function abbreviation(team) {
+  return localText(team.teamAbbrev) || team.abbrev || "";
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  color: var(--text);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+function displayTeamName(team) {
+  return localText(team.teamName) || abbreviation(team);
 }
 
-.line-container {
-  width: min(1150px, 92%);
-  margin: 36px auto;
+function playerName(player) {
+  return [player.firstName, player.lastName]
+    .filter(Boolean)
+    .join(" ");
 }
 
-.line-intro {
-  margin-bottom: 28px;
-  text-align: center;
+function seasonLabel(season) {
+  const text = String(season || "");
+
+  return /^\d{8}$/.test(text)
+    ? text.slice(0, 4) + "–" + text.slice(6)
+    : "Season unavailable";
 }
 
-.line-eyebrow {
-  color: var(--gold);
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
+function playerRate(player, stat) {
+  const games = player.current?.gamesPlayed;
+  const total = player.current?.[stat];
+
+  return (
+    Number.isFinite(games) &&
+    games > 0 &&
+    Number.isFinite(total) &&
+    total >= 0
+  ) ? total / games : null;
 }
 
-.line-intro h1 {
-  margin: 0;
-  font-size: clamp(2.2rem, 7vw, 4.5rem);
+function combinedRate(players, stat) {
+  if (!players.length) return null;
+
+  const season = String(players[0].season || "");
+
+  if (
+    !/^\d{8}$/.test(season) ||
+    !players.every(player => String(player.season) === season)
+  ) {
+    return null;
+  }
+
+  const rates = players.map(player => playerRate(player, stat));
+
+  return rates.every(Number.isFinite)
+    ? rates.reduce((sum, value) => sum + value, 0)
+    : null;
 }
 
-.line-intro > p:last-child,
-#lineDataNote,
-#lineSelectionCount,
-#lineSummaryNote {
-  color: var(--muted);
-  line-height: 1.6;
-}
+function paintPlayer(container, player) {
+  container.replaceChildren();
 
-.line-toolbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 22px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
+  if (!player) {
+    container.append(
+      makeElement("p", "line-empty", "Choose a player above.")
+    );
+    return;
+  }
 
-.line-toolbar > div {
-  flex: 1 1 240px;
-  max-width: 420px;
-}
-
-.line-toolbar label,
-.line-slot label {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.line-container select,
-.line-container button {
-  min-height: 46px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font: inherit;
-}
-
-.line-container select {
-  width: 100%;
-  min-width: 0;
-  color: var(--text);
-  background: #0d1015;
-}
-
-.line-container button {
-  color: #111;
-  background: var(--gold);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.line-container button:hover:not(:disabled) {
-  background: #ffdc73;
-}
-
-.line-container :disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.line-container select:focus-visible,
-.line-container button:focus-visible {
-  outline: 3px solid var(--gold);
-  outline-offset: 3px;
-}
-
-.line-status {
-  margin: 20px 0;
-  color: var(--muted);
-  text-align: center;
-  line-height: 1.6;
-}
-
-.line-team-heading {
-  margin: 28px 0 20px;
-  text-align: center;
-}
-
-.line-team-heading h2 {
-  margin-bottom: 8px;
-}
-
-.line-rink {
-  padding: 28px;
-  background:
-    linear-gradient(
-      transparent 49.5%,
-      rgba(206, 17, 38, 0.22) 49.5%,
-      rgba(206, 17, 38, 0.22) 50.5%,
-      transparent 50.5%
+  container.append(
+    makeElement(
+      "strong",
+      "line-number",
+      "#" + (player.sweaterNumber ?? "—")
     ),
-    radial-gradient(
-      circle at center,
-      rgba(105, 179, 231, 0.1),
-      transparent 65%
-    ),
-    #101820;
-  border: 3px solid #465365;
-  border-radius: 70px;
-}
+    makeElement("h4", "line-player-name", playerName(player)),
+    makeElement(
+      "p",
+      "line-player-meta",
+      (player.position || "Skater") + " · " +
+      seasonLabel(player.season) + " · GP " +
+      (player.current?.gamesPlayed ?? "—")
+    )
+  );
 
-.line-rink h3 {
-  margin: 0 0 18px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  letter-spacing: 2px;
-  text-align: center;
-  text-transform: uppercase;
-}
+  const stats = makeElement("dl", "line-player-stats");
 
-.line-rink > section + section {
-  margin-top: 38px;
-}
+  for (const [stat, label] of [
+    ["goals", "G/GP"],
+    ["points", "P/GP"],
+    ["shots", "S/GP"]
+  ]) {
+    const item = makeElement("div");
+    const value = playerRate(player, stat);
 
-.line-forwards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
+    item.append(
+      makeElement("dt", "", label),
+      makeElement("dd", "", value == null ? "—" : value.toFixed(2))
+    );
 
-.line-defence {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  width: 70%;
-  margin: 0 auto;
-}
-
-.line-slot {
-  min-width: 0;
-  padding: 16px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-top: 4px solid var(--team-color);
-  border-radius: 12px;
-}
-
-.line-player {
-  margin-top: 18px;
-  text-align: center;
-}
-
-.line-number {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 2.3rem;
-  font-weight: 900;
-}
-
-.line-player-name {
-  margin: 0 0 8px;
-  font-size: 1rem;
-  overflow-wrap: anywhere;
-}
-
-.line-player-meta,
-.line-empty {
-  color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.5;
-}
-
-.line-player-stats,
-.line-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.line-player-stats {
-  margin: 18px 0 0;
-}
-
-.line-player-stats dt {
-  color: var(--muted);
-  font-size: 0.7rem;
-}
-
-.line-player-stats dd {
-  margin: 6px 0 0;
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.line-summary {
-  margin-top: 24px;
-  padding: 24px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.line-summary h2 {
-  margin: 8px 0;
-}
-
-.line-summary-grid {
-  margin: 20px 0;
-}
-
-.line-summary-grid > div {
-  padding: 20px 10px;
-  text-align: center;
-  background: #0d1015;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.line-summary-grid dt {
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
-.line-summary-grid dd {
-  margin: 8px 0 0;
-  color: var(--gold);
-  font-size: clamp(1.3rem, 4vw, 2rem);
-  font-weight: 900;
-}
-
-.line-disclaimer {
-  color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.6;
-}
-
-@media (max-width: 760px) {
-  .line-rink {
-    padding: 20px 14px;
-    border-radius: 24px;
+    stats.append(item);
   }
 
-  .line-forwards,
-  .line-defence {
-    grid-template-columns: 1fr;
-    width: 100%;
+  container.append(stats);
+}
+
+function refreshLine() {
+  const selectedIds = Object.values(selections).filter(Boolean);
+
+  for (const slot of lineSlots) {
+    const { select, details } = slotControls[slot.id];
+
+    select.value = selections[slot.id] || "";
+
+    for (const option of select.options) {
+      option.disabled =
+        Boolean(option.value) &&
+        selectedIds.includes(option.value) &&
+        option.value !== select.value;
+    }
+
+    paintPlayer(
+      details,
+      linePlayers.find(
+        player => String(player.playerId) === select.value
+      )
+    );
   }
 
-  .line-summary {
-    padding: 18px;
+  const chosen = selectedIds.map(id =>
+    linePlayers.find(player => String(player.playerId) === id)
+  ).filter(Boolean);
+
+  byId("lineSelectionCount").textContent =
+    chosen.length + " of 5 players selected";
+
+  for (const [stat, id] of [
+    ["goals", "lineGoalsRate"],
+    ["points", "linePointsRate"],
+    ["shots", "lineShotsRate"]
+  ]) {
+    const total = combinedRate(chosen, stat);
+
+    byId(id).textContent =
+      total == null ? "—" : total.toFixed(2);
+  }
+
+  const missing = chosen.length &&
+    ["goals", "points", "shots"].some(
+      stat => combinedRate(chosen, stat) == null
+    );
+
+  byId("lineSummaryNote").textContent = !chosen.length
+    ? "Select players to see their combined individual rates."
+    : missing
+      ? "Some totals are unavailable: stats must be complete and from the same season."
+      : "Totals cover the " + chosen.length +
+        " selected players only. " +
+        seasonLabel(chosen[0].season) + " regular-season rates.";
+
+  clearLineButton.disabled = !chosen.length;
+}
+
+function buildSlots() {
+  byId("lineForwards").replaceChildren();
+  byId("lineDefence").replaceChildren();
+
+  slotControls = {};
+
+  for (const slot of lineSlots) {
+    const card = makeElement("article", "line-slot");
+    const label = makeElement("label", "", slot.label);
+    const select = makeElement("select");
+
+    select.id = "line-slot-" + slot.id;
+    label.htmlFor = select.id;
+
+    const placeholder = makeElement(
+      "option", "", "Choose a player"
+    );
+
+    placeholder.value = "";
+    select.append(placeholder);
+
+    for (const player of linePlayers.filter(
+      player => player.group === slot.group
+    )) {
+      const option = makeElement(
+        "option",
+        "",
+        "#" + (player.sweaterNumber ?? "—") +
+        " " + playerName(player)
+      );
+
+      option.value = String(player.playerId);
+      select.append(option);
+    }
+
+    const details = makeElement("div", "line-player");
+
+    card.append(label, select, details);
+
+    byId(
+      slot.group === "Forwards"
+        ? "lineForwards"
+        : "lineDefence"
+    ).append(card);
+
+    slotControls[slot.id] = { select, details };
+
+    select.addEventListener("change", () => {
+      const duplicate = Object.entries(selections).some(
+        ([id, value]) =>
+          id !== slot.id &&
+          value &&
+          value === select.value
+      );
+
+      if (!duplicate) {
+        selections[slot.id] = select.value;
+      }
+
+      refreshLine();
+    });
+  }
+
+  refreshLine();
+}
+
+async function getJson(url) {
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(20000)
+  });
+
+  if (!response.ok) {
+    throw new Error("Request failed: " + response.status);
+  }
+
+  return response.json();
+}
+
+async function loadLineTeam() {
+  const requestId = ++rosterRequest;
+  const team = lineTeamSelect.value;
+
+  selections = {};
+  lineResults.hidden = true;
+  clearLineButton.disabled = true;
+  lineStatus.textContent = "Loading " + team + " players…";
+
+  try {
+    const data = await getJson(
+      "/api/player-lab?team=" + encodeURIComponent(team)
+    );
+
+    if (requestId !== rosterRequest) return;
+
+    if (!Array.isArray(data.players)) {
+      throw new Error("Missing roster");
+    }
+
+    const seen = new Set();
+
+    linePlayers = data.players.filter(player => {
+      const id = String(player.playerId || "");
+
+      if (
+        !/^\d+$/.test(id) ||
+        seen.has(id) ||
+        !["Forwards", "Defence"].includes(player.group)
+      ) {
+        return false;
+      }
+
+      seen.add(id);
+      return true;
+    }).sort(
+      (a, b) =>
+        (a.sweaterNumber ?? 999) - (b.sweaterNumber ?? 999)
+    );
+
+    if (!linePlayers.length) {
+      throw new Error("No skaters available");
+    }
+
+    const teamInfo = lineTeams.find(
+      item => abbreviation(item) === team
+    );
+
+    byId("lineTeamName").textContent = teamInfo
+      ? displayTeamName(teamInfo)
+      : team;
+
+    byId("lineDataNote").textContent =
+      "Current roster · Season shown on each player card. " +
+      "Individual season totals may include time with other teams.";
+
+    document.documentElement.style.setProperty(
+      "--team-color",
+      LINE_COLORS[team] || "#69b3e7"
+    );
+
+    buildSlots();
+
+    lineResults.hidden = false;
+    lineStatus.textContent =
+      "Choose three forwards and two defenders.";
+  } catch (error) {
+    if (requestId !== rosterRequest) return;
+
+    console.error("Line builder:", error);
+
+    lineStatus.textContent =
+      "Players could not be loaded. " +
+      "Choose another team or refresh to retry.";
   }
 }
+
+async function startLineBuilder() {
+  lineStatus.textContent = "Loading NHL teams…";
+
+  try {
+    const data = await getJson("/api/standings");
+
+    const teams = Array.isArray(data.standings)
+      ? data.standings
+      : Array.isArray(data)
+        ? data
+        : [];
+
+    lineTeams = teams.filter(team => abbreviation(team))
+      .sort((a, b) =>
+        displayTeamName(a).localeCompare(displayTeamName(b))
+      );
+
+    if (!lineTeams.length) {
+      throw new Error("No teams available");
+    }
+
+    lineTeamSelect.replaceChildren();
+
+    for (const team of lineTeams) {
+      const option = makeElement(
+        "option", "", displayTeamName(team)
+      );
+
+      option.value = abbreviation(team);
+      lineTeamSelect.append(option);
+    }
+
+    lineTeamSelect.value = lineTeams.some(
+      team => abbreviation(team) === "NJD"
+    ) ? "NJD" : abbreviation(lineTeams[0]);
+
+    lineTeamSelect.disabled = false;
+
+    await loadLineTeam();
+  } catch (error) {
+    console.error("Line builder setup:", error);
+
+    lineStatus.textContent =
+      "Teams could not be loaded. Please refresh to retry.";
+  }
+}
+
+lineTeamSelect.addEventListener("change", loadLineTeam);
+
+clearLineButton.addEventListener("click", () => {
+  selections = {};
+  refreshLine();
+});
+
+startLineBuilder();

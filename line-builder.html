@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta
+    name="description"
+    content="Build a five-player unit and explore its individual scoring and shooting rates."
+  >
+
+  <title>Build Your Line | PuckLab</title>
+
+  <link rel="stylesheet" href="line-builder.css">
+  <link rel="stylesheet" href="navigation.css">
+</head>
+
+<body>
+  <header class="top-bar">
+    <nav class="top-links" aria-label="Primary navigation">
+      <a href="/">Home</a>
+      <a href="/game.html?id=2025030416">Game Center</a>
+      <a href="/compare.html">Matchup Lab</a>
+      <a href="/players.html">Player Lab</a>
+      <a href="/line-builder.html" aria-current="page">
+        Build Your Line
+      </a>
+    </nav>
+  </header>
+
+  <main class="line-container">
+    <section class="line-intro" aria-labelledby="pageTitle">
+      <p class="line-eyebrow">YOUR TEAM. YOUR COMBINATIONS.</p>
+      <h1 id="pageTitle">Build Your Line</h1>
+      <p>
+        Select three forwards and two defenders.
+        Explore the numbers behind your five-player unit.
+      </p>
+    </section>
+
+    <section class="line-toolbar" aria-label="Team controls">
+      <div>
+        <label for="lineTeamSelect">Choose a team</label>
+        <select id="lineTeamSelect" disabled>
+          <option value="NJD">New Jersey Devils</option>
+        </select>
+      </div>
+
+      <button id="clearLineButton" type="button" disabled>
+        Clear selections
+      </button>
+    </section>
+
+    <p id="lineStatus" class="line-status" role="status">
+      Line builder setup in progress.
+    </p>
+
+    <section id="lineResults" hidden>
+      <header class="line-team-heading">
+        <h2 id="lineTeamName">New Jersey Devils</h2>
+        <p id="lineDataNote"></p>
+      </header>
+
+      <div class="line-rink">
+        <section aria-labelledby="lineForwardsTitle">
+          <h3 id="lineForwardsTitle">Forwards</h3>
+          <div id="lineForwards" class="line-forwards"></div>
+        </section>
+
+        <section aria-labelledby="lineDefenceTitle">
+          <h3 id="lineDefenceTitle">Defence</h3>
+          <div id="lineDefence" class="line-defence"></div>
+        </section>
+      </div>
+
+      <section class="line-summary" aria-labelledby="lineSummaryTitle">
+        <p class="line-eyebrow">YOUR SELECTED UNIT</p>
+        <h2 id="lineSummaryTitle">Combined Individual Rates</h2>
+
+        <p id="lineSelectionCount" role="status">
+          0 of 5 players selected
+        </p>
+
+        <dl class="line-summary-grid">
+          <div>
+            <dt>Sum G/GP</dt>
+            <dd id="lineGoalsRate">—</dd>
+          </div>
+
+          <div>
+            <dt>Sum P/GP</dt>
+            <dd id="linePointsRate">—</dd>
+          </div>
+
+          <div>
+            <dt>Sum S/GP</dt>
+            <dd id="lineShotsRate">—</dd>
+          </div>
+        </dl>
+
+        <p class="line-disclaimer">
+          These figures add each selected player's individual
+          per-game rates. They are not shared-ice statistics,
+          expected goals, or a prediction of line chemistry.
+        </p>
+
+        <p id="lineSummaryNote" role="status"></p>
+      </section>
+    </section>
+  </main>
+
+  <!-- We will connect line-builder.js after creating it. -->
+</body>
+</html>

@@ -421,3 +421,119 @@ button:disabled {
     align-self: end;
   }
 }
+
+.resilience-section {
+  margin-top: 28px;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.resilience-section h2 {
+  margin: 4px 0 12px;
+}
+
+.resilience-description,
+#resilienceStatus {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.resilience-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.resilience-toolbar label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.resilience-toolbar select {
+  width: auto;
+  max-width: 100%;
+}
+
+.resilience-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.resilience-card {
+  min-width: 0;
+  padding: 20px;
+  background: #0d1015;
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--team-color, #69b3e7);
+  border-radius: 12px;
+}
+
+.resilience-card h3 {
+  margin: 0 0 18px;
+}
+
+.resilience-metric {
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
+
+.resilience-metric h4 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+}
+
+.resilience-value {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.resilience-record,
+.resilience-note {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.resilience-small-sample {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 8px;
+  color: #f5c542;
+  border: 1px solid #f5c542;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.resilience-metric details {
+  margin-top: 12px;
+}
+
+.resilience-metric summary {
+  color: #69b3e7;
+  cursor: pointer;
+}
+
+.resilience-metric a {
+  color: #69b3e7;
+}
+
+.resilience-metric a:focus-visible,
+.resilience-metric summary:focus-visible {
+  outline: 2px solid #f5c542;
+  outline-offset: 4px;
+}
+
+@media (max-width: 700px) {
+  .resilience-grid {
+    grid-template-columns: 1fr;
+  }
+}

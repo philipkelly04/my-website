@@ -658,6 +658,7 @@ function displayComparison(teamOne, teamTwo) {
   results.hidden = false;
 
   loadHeadToHead(teamOne, teamTwo);
+  loadResilience(teamOne, teamTwo);
 }
 
 function compareSelectedTeams() {
@@ -761,5 +762,20 @@ async function loadStandings() {
 }
 
 compareButton.addEventListener("click", compareSelectedTeams);
+
+document.querySelector("#resilienceWindow")
+  ?.addEventListener("change", () => {
+    const teamOne = standings.find(
+      team => teamAbbreviation(team) === teamOneSelect.value
+    );
+
+    const teamTwo = standings.find(
+      team => teamAbbreviation(team) === teamTwoSelect.value
+    );
+
+    if (teamOne && teamTwo && teamOne !== teamTwo) {
+      displayComparison(teamOne, teamTwo);
+    }
+  });
 
 loadStandings();

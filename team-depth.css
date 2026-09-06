@@ -1,0 +1,216 @@
+#teamDepth {
+  width: 100%;
+  min-width: 0;
+  margin: 36px 0 0;
+  padding: 24px;
+  color: #f5f7fa;
+  background: #15191f;
+  border: 1px solid #2a3039;
+  border-radius: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#teamDepth,
+#teamDepth * {
+  box-sizing: border-box;
+}
+
+#teamDepth [hidden] {
+  display: none !important;
+}
+
+#teamDepth h2 {
+  margin: 8px 0 12px;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+}
+
+#teamDepth p {
+  line-height: 1.6;
+}
+
+#teamDepth .depth-eyebrow {
+  color: #f5c542;
+  font-size: 0.875rem;
+  letter-spacing: 1px;
+  font-weight: 800;
+}
+
+#teamDepth .depth-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 14px;
+  margin: 22px 0;
+}
+
+#teamDepth label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #c5cbd4;
+  min-width: 0;
+}
+
+#teamDepth select,
+#teamDepth button {
+  font: inherit;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid #465365;
+  border-radius: 8px;
+  color: #f5f7fa;
+  background: #0d1015;
+}
+
+#teamDepth select {
+  max-width: 100%;
+}
+
+#teamDepth button {
+  cursor: pointer;
+}
+
+#teamDepth #depthRetry {
+  background: #f5c542;
+  color: #111;
+  font-weight: 800;
+}
+
+#teamDepth button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+#teamDepth :focus-visible {
+  outline: 3px solid #f5c542;
+  outline-offset: 2px;
+}
+
+#teamDepth .depth-scroll {
+  max-height: 680px;
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid #2a3039;
+  border-radius: 10px;
+}
+
+#teamDepth table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 1550px;
+  font-size: 0.875rem;
+}
+
+#teamDepth caption {
+  padding: 14px;
+  text-align: left;
+  color: #c5cbd4;
+}
+
+#teamDepth th,
+#teamDepth td {
+  padding: 10px 8px;
+  text-align: center;
+  border-bottom: 1px solid #2a3039;
+}
+
+#teamDepth thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #202630;
+  white-space: nowrap;
+}
+
+#teamDepth tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+  background: #15191f;
+  min-width: 240px;
+}
+
+#teamDepth thead th:first-child {
+  left: 0;
+  z-index: 3;
+}
+
+#teamDepth tbody th a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #f5f7fa;
+  text-decoration: none;
+}
+
+#teamDepth tbody th img {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#teamDepth tbody th a:hover {
+  text-decoration: underline;
+}
+
+#teamDepth td button {
+  width: 100%;
+  min-width: 44px;
+  background: transparent;
+  border-color: transparent;
+  font-weight: 800;
+}
+
+#teamDepth td button:hover {
+  border-color: #f5c542;
+}
+
+#teamDepth .depth-zero {
+  color: #929baa;
+}
+
+#teamDepth .depth-note,
+#depthStatus {
+  color: #aab2bf;
+  font-size: 0.875rem;
+}
+
+#teamDepth details {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #465365;
+  border-radius: 10px;
+  background: #0d1015;
+}
+
+#teamDepth summary {
+  color: #f5c542;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+#teamDepth li {
+  padding: 9px 0;
+  line-height: 1.5;
+}
+
+#teamDepth li span {
+  color: #c5cbd4;
+}
+
+@media (max-width: 600px) {
+  #teamDepth {
+    padding: 16px 10px;
+  }
+
+  #teamDepth .depth-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #teamDepth tbody th {
+    min-width: 170px;
+    max-width: 170px;
+  }
+}

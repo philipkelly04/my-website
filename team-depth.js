@@ -14,21 +14,18 @@
   const detail = get("depthDetails");
 
   const labels = [
-    "1.0+",
-    "0.9–<1.0",
-    "0.8–<0.9",
-    "0.7–<0.8",
-    "0.6–<0.7",
-    "0.5–<0.6",
-    "0.4–<0.5",
-    "0.3–<0.4",
-    "0.2–<0.3",
-    "0.1–<0.2",
-    ">0–<0.1",
-    "Zero goals",
-    "Below min GP",
-    "No data"
-  ];
+  "0.7+",
+  "0.6–<0.7",
+  "0.5–<0.6",
+  "0.4–<0.5",
+  "0.3–<0.4",
+  "0.2–<0.3",
+  "0.1–<0.2",
+  ">0–<0.1",
+  "Zero goals",
+  "Below min GP",
+  "No data"
+];
 
   let teams = [];
   let stats = new Map();
@@ -48,24 +45,23 @@
   const seasonName = value =>
     value.slice(0, 4) + "–" + value.slice(6);
 
-  function bucket(player, minGP) {
-    if (
-      !Number.isFinite(player.gp) ||
-      player.gp <= 0 ||
-      !Number.isFinite(player.goals)
-    ) {
-      return 13;
-    }
-
-    if (player.gp < minGP) return 12;
-    if (player.goals === 0) return 11;
-
-    // Use the exact ratio, not a rounded display value.
-    return 10 - Math.min(
-      10,
-      Math.floor((player.goals * 10) / player.gp)
-    );
+  function bucket(p, minGP) {
+  if (
+    !Number.isFinite(p.gp) ||
+    p.gp <= 0 ||
+    !Number.isFinite(p.goals)
+  ) {
+    return 10;
   }
+
+  if (p.gp < minGP) return 9;
+  if (p.goals === 0) return 8;
+
+  return 7 - Math.min(
+    7,
+    Math.floor((p.goals * 10) / p.gp)
+  );
+}
 
   function rowData(team) {
     const groups = Array.from(
@@ -149,7 +145,7 @@
       if (a.ready !== b.ready) return a.ready ? -1 : 1;
 
       if (order.value !== "name") {
-        const end = order.value === "0.3" ? 8 : 9;
+        const end = order.value === "0.3" ? 5 : 6;
 
         const score = row =>
           row.groups.slice(0, end).reduce(
@@ -216,10 +212,10 @@
               `${labels[index]}. View players.`
             );
 
-            if (index < 11) {
-              td.style.backgroundColor =
-                `rgba(245,197,66,${Math.min(0.4, players.length * 0.06)})`;
-            }
+            if (index < 8) {
+  td.style.backgroundColor =
+    `rgba(245,197,66,${Math.min(0.4, players.length * 0.06)})`;
+}
 
             button.addEventListener("click", () => {
               showPlayers(row, index);

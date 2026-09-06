@@ -204,6 +204,94 @@
     OT: Overtime/Shootout Losses · PTS: Points
   </p>
 </section>
+
+<section id="teamDepth" aria-labelledby="depthTitle">
+  <p class="depth-eyebrow">ROSTER SCORING DEPTH</p>
+  <h2 id="depthTitle">Where do the goals come from?</h2>
+
+  <p>
+    Each cell counts current-roster skaters in a
+    goals-per-game band. Click a count to see the players.
+  </p>
+
+  <div class="depth-controls">
+    <label>
+      Stats season
+      <select id="depthSeason">
+        <option value="20252026">2025–26</option>
+        <option value="20262027">2026–27</option>
+      </select>
+    </label>
+
+    <label>
+      Minimum GP
+      <select id="depthMinimum">
+        <option value="1">1 game</option>
+        <option value="10">10 games</option>
+        <option value="20">20 games</option>
+        <option value="40">40 games</option>
+      </select>
+    </label>
+
+    <label>
+      Players
+      <select id="depthPosition">
+        <option value="all">All skaters</option>
+        <option value="F">Forwards</option>
+        <option value="D">Defenders</option>
+      </select>
+    </label>
+
+    <label>
+      Sort teams
+      <select id="depthOrder">
+        <option value="name">Team name</option>
+        <option value="0.3">Most players at 0.30+ G/GP</option>
+        <option value="0.2">Most players at 0.20+ G/GP</option>
+      </select>
+    </label>
+
+    <button id="depthRetry" type="button">
+      Reload table
+    </button>
+  </div>
+
+  <p id="depthStatus" role="status">
+    The table loads when you scroll near it.
+  </p>
+
+  <div
+    class="depth-scroll"
+    tabindex="0"
+    role="region"
+    aria-label="Team scoring depth; scroll horizontally"
+    aria-describedby="depthLegend"
+  >
+    <table>
+      <caption>
+        Skater counts by G/GP — all 32 NHL teams
+      </caption>
+
+      <thead id="depthHead"></thead>
+      <tbody id="depthBody"></tbody>
+    </table>
+  </div>
+
+  <p id="depthLegend" class="depth-note">
+    Bands use unrounded goals ÷ games played.
+    For example, 0.3–&lt;0.4 includes 0.30 but excludes 0.40.
+    “No data” means no usable record or no games played;
+    it does not mean zero goals.
+    Current listed rosters can include extra offseason players.
+    Selected-season stats include all teams a player represented.
+    The colours show player counts, not a team-strength rating.
+  </p>
+
+  <details id="depthDetails" hidden>
+    <summary id="depthDetailTitle"></summary>
+    <ul id="depthPlayerList"></ul>
+  </details>
+</section>
       
     </main>
 

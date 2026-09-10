@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Offseason Outlook | PuckLab</title>
+
+  <meta
+    name="description"
+    content="Compare production added and lost through verified NHL offseason roster changes."
+  >
+
+  <link rel="stylesheet" href="/navigation.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0b0d10;
+      color: #f5f7fa;
+      font-family: Arial, sans-serif;
+    }
+
+    .outlook {
+      width: min(1180px, 94%);
+      margin: 32px auto;
+    }
+
+    .outlook h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      margin: 0 0 12px;
+    }
+
+    .outlook p {
+      color: #aab2bf;
+      line-height: 1.6;
+    }
+
+    .outlook-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .outlook label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .outlook select,
+    .outlook button {
+      min-height: 46px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    .outlook select {
+      background: #15191f;
+      color: #fff;
+      border: 1px solid #465365;
+    }
+
+    .outlook button {
+      background: #f5c542;
+      color: #111;
+      border: 0;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .outlook :disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .outlook :focus-visible {
+      outline: 3px solid #f5c542;
+      outline-offset: 3px;
+    }
+
+    .outlook-scroll {
+      overflow: auto;
+      border: 1px solid #2a3039;
+      border-radius: 12px;
+    }
+
+    .outlook table {
+      width: 100%;
+      min-width: 880px;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #15191f;
+    }
+
+    .outlook caption {
+      text-align: left;
+      padding: 18px;
+      color: #aab2bf;
+    }
+
+    .outlook th,
+    .outlook td {
+      padding: 16px;
+      border-bottom: 1px solid #2a3039;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .outlook thead th {
+      background: #202630;
+      white-space: nowrap;
+    }
+
+    .outlook th:first-child {
+      position: sticky;
+      left: 0;
+      background: #15191f;
+      min-width: 230px;
+      text-align: left;
+    }
+
+    .outlook td:last-child,
+    .outlook th:last-child {
+      text-align: left;
+      width: 30%;
+    }
+
+    .outlook td:last-child {
+      color: #aab2bf;
+      font-size: .875rem;
+      line-height: 1.5;
+    }
+
+    .outlook-team {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .outlook-team img {
+      flex: 0 0 32px;
+      object-fit: contain;
+    }
+
+    .outlook-plus {
+      color: #86efac;
+      font-weight: bold;
+    }
+
+    .outlook-minus {
+      color: #fca5a5;
+      font-weight: bold;
+    }
+
+    .outlook-hits {
+      color: #93c5fd;
+      font-weight: bold;
+    }
+
+    .outlook details {
+      margin-top: 8px;
+    }
+
+    .outlook summary {
+      cursor: pointer;
+    }
+
+    .outlook a {
+      color: #93c5fd;
+    }
+
+    .outlook details a {
+      display: block;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .outlook th:first-child {
+        min-width: 170px;
+        max-width: 170px;
+      }
+
+      .outlook th,
+      .outlook td {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="top-bar">
+    <a href="/" class="top-brand">PUCKLAB</a>
+
+    <nav class="top-links" aria-label="Primary navigation">
+      <a href="/">Home</a>
+      <a href="/game.html?id=2025030416">Game Center</a>
+      <a href="/compare.html">Matchup Lab</a>
+      <a href="/players.html">Player Lab</a>
+      <a href="/line-builder.html">Build Your Line</a>
+      <a href="/offseason.html" aria-current="page">
+        Offseason Outlook
+      </a>
+    </nav>
+  </header>
+
+  <main class="outlook">
+    <h1>Offseason Outlook</h1>
+
+    <p>
+      2026–27 roster changes, measured using 2025–26 production.
+      Skaters only; minimum 10 regular-season games.
+    </p>
+
+    <div class="outlook-controls">
+      <div>
+        <label for="outlookMetric">Compare production</label>
+
+        <select id="outlookMetric">
+          <option value="goals">Goals per game — G/GP</option>
+          <option value="points">Points per game — P/GP</option>
+          <option value="assists">Assists per game — A/GP</option>
+          <option value="shots">Shots per game — S/GP</option>
+          <option value="hits">Hits per game — Hits/GP</option>
+        </select>
+      </div>
+
+      <button id="outlookRetry" type="button">
+        Retry stats
+      </button>
+    </div>
+
+    <p id="outlookStatus" role="status">
+      Loading offseason outlook…
+    </p>
+
+    <div
+      class="outlook-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Team roster changes table"
+    >
+      <table aria-describedby="outlookNote">
+        <caption id="outlookCaption">2026 offseason</caption>
+
+        <thead>
+          <tr>
+            <th scope="col">Team</th>
+            <th scope="col">Added</th>
+            <th scope="col">Lost</th>
+            <th scope="col">Net change</th>
+            <th scope="col">Coverage</th>
+          </tr>
+        </thead>
+
+        <tbody id="outlookBody"></tbody>
+      </table>
+    </div>
+
+    <p id="outlookNote">
+      Added and Lost sum individual per-game rates.
+      Net change is Added minus Lost.
+      These are not projected team rates or an overall team rating.
+      More hits means more hitting production, not necessarily
+      better performance.
+    </p>
+
+    <p>
+      Only reviewed offseason changes are included.
+      Renewals are not additions.
+      Players with fewer than 10 games or no 2025–26 NHL skater
+      record are excluded.
+      Missing metric values appear as —, not zero.
+    </p>
+
+    <noscript>
+      <p>JavaScript is required to load the table.</p>
+    </noscript>
+  </main>
+
+  <script type="module" src="/offseason.js?v=1"></script>
+</body>
+</html>

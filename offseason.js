@@ -1,4 +1,4 @@
-import { teamNames, moves } from "./offseason-moves.js?v=1";
+import { teamNames, moves } from "./offseason-moves.js?v=2";
 
 const get = id => document.getElementById(id);
 
@@ -155,9 +155,14 @@ function render() {
       lost = total(review.lost, field, summary, realtime);
 
       message =
-        `${added.included} added / ${lost.included} lost counted; ` +
-        `${added.excluded + lost.excluded} excluded ` +
-        "(under 10 GP or no season record)";
+  `${added.included} additions / ${lost.included} departures counted` +
+  " · 10+ GP";
+
+if (added.excluded + lost.excluded > 0) {
+  message +=
+    `; ${added.excluded + lost.excluded} listed players ` +
+    "currently lack qualifying stats";
+}
 
       if (added.missing + lost.missing) {
         message +=

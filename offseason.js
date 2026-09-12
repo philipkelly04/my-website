@@ -1,4 +1,7 @@
-import { loadOutlook, memberFetch } from "/auth-client.js";
+import {
+  loadOutlook,
+  memberFetch
+} from "/auth-client.js?v=public1";
 
 const { teamNames, moves } = await loadOutlook();
 

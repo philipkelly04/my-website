@@ -1,89 +1,13 @@
 export const config = { maxDuration: 30 };
 
-const project = "https://qvmillcqdokoudtxqbiz.supabase.co";
-const key = "sb_publishable_ij6kZwcpUEaKRIgu-XQTbQ_Jh0GtkKb";
-
 export default async function handler(request, response) {
-  for (const header of [
-    "Cache-Control",
-    "CDN-Cache-Control",
-    "Vercel-CDN-Cache-Control"
-  ]) {
-    response.setHeader(header, "private, no-store");
-  }
+  response.setHeader("Cache-Control", "no-store");
 
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
+
     return response.status(405).json({
       error: "GET requests only."
-    });
-  }
-
-  const bearer = request.headers.authorization || "";
-
-  if (!/^Bearer \S+$/i.test(bearer)) {
-    return response.status(401).json({
-      error: "Please sign in."
-    });
-  }
-
-  try {
-    const headers = {
-      apikey: key,
-      Authorization: bearer
-    };
-
-    const userResponse = await fetch(`${project}/auth/v1/user`, {
-      headers,
-      signal: AbortSignal.timeout(8000)
-    });
-
-    if ([401, 403].includes(userResponse.status)) {
-      return response.status(401).json({
-        error: "Please sign in again."
-      });
-    }
-
-    if (!userResponse.ok) {
-      throw new Error("Authentication unavailable");
-    }
-
-    const user = await userResponse.json();
-
-    if (!user.id || !user.email_confirmed_at || user.is_anonymous) {
-      return response.status(401).json({
-        error: "Verify your email first."
-      });
-    }
-
-    const membershipParams = new URLSearchParams({
-      user_id: `eq.${user.id}`,
-      select: "status",
-      limit: "1"
-    });
-
-    const membershipResponse = await fetch(
-      `${project}/rest/v1/pucklab_memberships?${membershipParams}`,
-      {
-        headers,
-        signal: AbortSignal.timeout(8000)
-      }
-    );
-
-    if (!membershipResponse.ok) {
-      throw new Error("Membership lookup unavailable");
-    }
-
-    const memberships = await membershipResponse.json();
-
-    if (memberships[0]?.status !== "member") {
-      return response.status(403).json({
-        error: "Early access membership required."
-      });
-    }
-  } catch {
-    return response.status(503).json({
-      error: "Unable to check membership. Please retry."
     });
   }
 
@@ -116,11 +40,13 @@ export default async function handler(request, response) {
   try {
     const result = await fetch(
       `https://api.nhle.com/stats/rest/en/skater/${report}?${params}`,
-      { signal: AbortSignal.timeout(12000) }
+      {
+        signal: AbortSignal.timeout(12000)
+      }
     );
 
     if (!result.ok) {
-      throw new Error("Statistics request failed");
+      throw new Error("Statistics request failed.");
     }
 
     const data = await result.json();
@@ -135,32 +61,37 @@ export default async function handler(request, response) {
         Math.max(0, data.total - page * 100)
       )
     ) {
-      throw new Error("Incomplete statistics page");
+      throw new Error("Incomplete statistics page.");
     }
 
     const number = value =>
       Number.isInteger(value) && value >= 0 ? value : null;
 
-    const players = data.data.map(p => ({
-      id: p.playerId,
-      gp: number(p.gamesPlayed),
-      position: p.positionCode,
-      goals: number(p.goals),
-      assists: number(p.assists),
-      points: number(p.points),
-      shots: number(p.shots),
-      hits: number(p.hits)
+    const players = data.data.map(player => ({
+      id: player.playerId,
+      gp: number(player.gamesPlayed),
+      position: player.positionCode,
+      goals: number(player.goals),
+      assists: number(player.assists),
+      points: number(player.points),
+      shots: number(player.shots),
+      hits: number(player.hits)
     }));
 
     if (
-      players.some(p =>
-        !Number.isInteger(p.id) ||
-        p.id <= 0 ||
-        p.gp === null
+      players.some(player =>
+        !Number.isInteger(player.id) ||
+        player.id <= 0 ||
+        player.gp === null
       )
     ) {
-      throw new Error("Invalid player statistics");
+      throw new Error("Invalid player statistics.");
     }
+
+    response.setHeader(
+      "Cache-Control",
+      "public, max-age=0, s-maxage=3600"
+    );
 
     return response.status(200).json({
       report,

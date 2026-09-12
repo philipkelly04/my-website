@@ -1,12 +1,89 @@
 export const config = { maxDuration: 30 };
 
+const project = "https://qvmillcqdokoudtxqbiz.supabase.co";
+const key = "sb_publishable_ij6kZwcpUEaKRIgu-XQTbQ_Jh0GtkKb";
+
 export default async function handler(request, response) {
-  response.setHeader("Cache-Control", "no-store");
+  for (const header of [
+    "Cache-Control",
+    "CDN-Cache-Control",
+    "Vercel-CDN-Cache-Control"
+  ]) {
+    response.setHeader(header, "private, no-store");
+  }
 
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
     return response.status(405).json({
       error: "GET requests only."
+    });
+  }
+
+  const bearer = request.headers.authorization || "";
+
+  if (!/^Bearer \S+$/i.test(bearer)) {
+    return response.status(401).json({
+      error: "Please sign in."
+    });
+  }
+
+  try {
+    const headers = {
+      apikey: key,
+      Authorization: bearer
+    };
+
+    const userResponse = await fetch(`${project}/auth/v1/user`, {
+      headers,
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if ([401, 403].includes(userResponse.status)) {
+      return response.status(401).json({
+        error: "Please sign in again."
+      });
+    }
+
+    if (!userResponse.ok) {
+      throw new Error("Authentication unavailable");
+    }
+
+    const user = await userResponse.json();
+
+    if (!user.id || !user.email_confirmed_at || user.is_anonymous) {
+      return response.status(401).json({
+        error: "Verify your email first."
+      });
+    }
+
+    const membershipParams = new URLSearchParams({
+      user_id: `eq.${user.id}`,
+      select: "status",
+      limit: "1"
+    });
+
+    const membershipResponse = await fetch(
+      `${project}/rest/v1/pucklab_memberships?${membershipParams}`,
+      {
+        headers,
+        signal: AbortSignal.timeout(8000)
+      }
+    );
+
+    if (!membershipResponse.ok) {
+      throw new Error("Membership lookup unavailable");
+    }
+
+    const memberships = await membershipResponse.json();
+
+    if (memberships[0]?.status !== "member") {
+      return response.status(403).json({
+        error: "Early access membership required."
+      });
+    }
+  } catch {
+    return response.status(503).json({
+      error: "Unable to check membership. Please retry."
     });
   }
 
@@ -43,7 +120,7 @@ export default async function handler(request, response) {
     );
 
     if (!result.ok) {
-      throw new Error(`NHL returned ${result.status}`);
+      throw new Error("Statistics request failed");
     }
 
     const data = await result.json();
@@ -85,11 +162,6 @@ export default async function handler(request, response) {
       throw new Error("Invalid player statistics");
     }
 
-    response.setHeader(
-      "Cache-Control",
-      "public, max-age=0, s-maxage=3600"
-    );
-
     return response.status(200).json({
       report,
       page,
@@ -98,9 +170,7 @@ export default async function handler(request, response) {
       players,
       fetchedAt: new Date().toISOString()
     });
-  } catch (error) {
-    console.error("Offseason stats:", error);
-
+  } catch {
     return response.status(502).json({
       error: "Statistics unavailable. Please retry."
     });

@@ -1,9 +1,4 @@
-import {
-  loadOutlook,
-  memberFetch
-} from "/auth-client.js?v=public1";
-
-const { teamNames, moves } = await loadOutlook();
+import { teamNames, moves } from "./offseason-moves.js?v=2";
 
 const get = id => document.getElementById(id);
 
@@ -63,8 +58,6 @@ function validReview(review) {
   );
 }
 
-// Missing metric data makes a total incomplete.
-// It is never silently treated as zero.
 function total(ids, field, base, hits) {
   let sum = 0;
   let excluded = 0;
@@ -124,8 +117,10 @@ function render() {
     identity.className = "outlook-team";
 
     const logo = node("img");
+
     logo.src =
       `https://assets.nhle.com/logos/nhl/svg/${team}_light.svg`;
+
     logo.alt = "";
     logo.width = 32;
     logo.height = 32;
@@ -160,14 +155,14 @@ function render() {
       lost = total(review.lost, field, summary, realtime);
 
       message =
-  `${added.included} additions / ${lost.included} departures counted` +
-  " · 10+ GP";
+        `${added.included} additions / ` +
+        `${lost.included} departures counted · 10+ GP";
 
-if (added.excluded + lost.excluded > 0) {
-  message +=
-    `; ${added.excluded + lost.excluded} listed players ` +
-    "currently lack qualifying stats";
-}
+      if (added.excluded + lost.excluded > 0) {
+        message +=
+          `; ${added.excluded + lost.excluded} listed players ` +
+          "currently lack qualifying stats";
+      }
 
       if (added.missing + lost.missing) {
         message +=
@@ -216,9 +211,11 @@ if (added.excluded + lost.excluded > 0) {
 
       review.sources.forEach((url, index) => {
         const link = node("a", `Source ${index + 1}`);
+
         link.href = url;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
+
         details.append(link);
       });
 
@@ -232,12 +229,12 @@ if (added.excluded + lost.excluded > 0) {
 
 async function report(name) {
   async function fetchPage(page) {
-    const response = await memberFetch(
-  `/api/offseason-data?report=${name}&page=${page}`,
-  {
-    signal: AbortSignal.timeout(18000)
-  }
-);
+    const response = await fetch(
+      `/api/offseason-data?report=${name}&page=${page}`,
+      {
+        signal: AbortSignal.timeout(18000)
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Could not load statistics");

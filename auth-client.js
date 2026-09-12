@@ -1,74 +1,39 @@
-import { createClient } from
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const project = "https://qvmillcqdokoudtxqbiz.supabase.co";
 
-export const supabase = createClient(
-  "https://qvmillcqdokoudtxqbiz.supabase.co",
-  "sb_publishable_ij6kZwcpUEaKRIgu-XQTbQ_Jh0GtkKb",
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: false
-    }
-  }
-);
+const publicKey =
+  "sb_publishable_ij6kZwcpUEaKRIgu-XQTbQ_Jh0GtkKb";
 
-function returnToLogin() {
-  document.querySelector("#outlookBody")?.replaceChildren();
-  window.location.replace("/members.html");
-  throw new Error("Membership login required.");
-}
-
-async function currentSession() {
-  const { data, error } = await supabase.auth.getSession();
-
-  if (error || !data.session) returnToLogin();
-
-  return data.session;
-}
-
+// Retains the existing function name without requiring membership.
 export async function memberFetch(url, options = {}) {
-  const session = await currentSession();
-  const headers = new Headers(options.headers);
-
-  headers.set("Authorization", `Bearer ${session.access_token}`);
-
-  const response = await fetch(url, {
+  return fetch(url, {
     ...options,
-    headers,
     cache: "no-store"
   });
-
-  if (response.status === 401 || response.status === 403) {
-    returnToLogin();
-  }
-
-  return response;
 }
 
 export async function loadOutlook() {
   try {
-    const session = await currentSession();
+    const response = await fetch(
+      `${project}/rest/v1/pucklab_outlook_snapshot?id=eq.1&select=content`,
+      {
+        headers: {
+          apikey: publicKey
+        },
+        signal: AbortSignal.timeout(15000),
+        cache: "no-store"
+      }
+    );
 
-    const membership = await supabase
-      .from("pucklab_memberships")
-      .select("status")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-
-    if (membership.error) throw membership.error;
-
-    if (membership.data?.status !== "member") {
-      returnToLogin();
+    if (!response.ok) {
+      throw new Error("Unable to retrieve the Outlook snapshot.");
     }
 
-    const snapshot = await supabase
-      .from("pucklab_outlook_snapshot")
-      .select("content")
-      .eq("id", 1)
-      .single();
+    const rows = await response.json();
+    const snapshot = rows[0]?.content;
 
-    if (snapshot.error) throw snapshot.error;
+    if (!snapshot) {
+      throw new Error("The Outlook snapshot is missing.");
+    }
 
     const teamNames = {};
     const moves = {};
@@ -79,7 +44,7 @@ export async function loadOutlook() {
       "https://www.nhl.com/news/topic/free-agency/free-agency-signings-nhl-2026-27"
     ];
 
-    for (const [team, entry] of Object.entries(snapshot.data.content)) {
+    for (const [team, entry] of Object.entries(snapshot)) {
       teamNames[team] = entry.name;
 
       const sources = [...referenceSources];
@@ -106,19 +71,9 @@ export async function loadOutlook() {
 
     if (status) {
       status.textContent =
-        "Unable to load member access or the snapshot. Please refresh to retry.";
+        "Unable to load the Outlook snapshot. Please refresh to retry.";
     }
 
     throw error;
   }
 }
-
-supabase.auth.onAuthStateChange((event) => {
-  if (
-    event === "SIGNED_OUT" &&
-    window.location.pathname === "/offseason.html"
-  ) {
-    document.querySelector("#outlookBody")?.replaceChildren();
-    window.location.replace("/members.html");
-  }
-});

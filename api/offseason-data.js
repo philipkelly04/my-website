@@ -46,7 +46,7 @@ export default async function handler(request, response) {
     );
 
     if (!result.ok) {
-      throw new Error("Statistics request failed.");
+      throw new Error(`NHL returned ${result.status}`);
     }
 
     const data = await result.json();
@@ -61,31 +61,31 @@ export default async function handler(request, response) {
         Math.max(0, data.total - page * 100)
       )
     ) {
-      throw new Error("Incomplete statistics page.");
+      throw new Error("Incomplete statistics page");
     }
 
     const number = value =>
       Number.isInteger(value) && value >= 0 ? value : null;
 
-    const players = data.data.map(player => ({
-      id: player.playerId,
-      gp: number(player.gamesPlayed),
-      position: player.positionCode,
-      goals: number(player.goals),
-      assists: number(player.assists),
-      points: number(player.points),
-      shots: number(player.shots),
-      hits: number(player.hits)
+    const players = data.data.map(p => ({
+      id: p.playerId,
+      gp: number(p.gamesPlayed),
+      position: p.positionCode,
+      goals: number(p.goals),
+      assists: number(p.assists),
+      points: number(p.points),
+      shots: number(p.shots),
+      hits: number(p.hits)
     }));
 
     if (
-      players.some(player =>
-        !Number.isInteger(player.id) ||
-        player.id <= 0 ||
-        player.gp === null
+      players.some(p =>
+        !Number.isInteger(p.id) ||
+        p.id <= 0 ||
+        p.gp === null
       )
     ) {
-      throw new Error("Invalid player statistics.");
+      throw new Error("Invalid player statistics");
     }
 
     response.setHeader(
@@ -101,7 +101,9 @@ export default async function handler(request, response) {
       players,
       fetchedAt: new Date().toISOString()
     });
-  } catch {
+  } catch (error) {
+    console.error("Offseason stats:", error);
+
     return response.status(502).json({
       error: "Statistics unavailable. Please retry."
     });

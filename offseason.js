@@ -1,4 +1,6 @@
-import { teamNames, moves } from "./offseason-moves.js?v=2";
+import { loadOutlook, memberFetch } from "/auth-client.js";
+
+const { teamNames, moves } = await loadOutlook();
 
 const get = id => document.getElementById(id);
 
@@ -227,10 +229,12 @@ if (added.excluded + lost.excluded > 0) {
 
 async function report(name) {
   async function fetchPage(page) {
-    const response = await fetch(
-      `/api/offseason-data?report=${name}&page=${page}`,
-      { signal: AbortSignal.timeout(18000) }
-    );
+    const response = await memberFetch(
+  `/api/offseason-data?report=${name}&page=${page}`,
+  {
+    signal: AbortSignal.timeout(18000)
+  }
+);
 
     if (!response.ok) {
       throw new Error("Could not load statistics");

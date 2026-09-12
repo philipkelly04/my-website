@@ -154,9 +154,9 @@ function render() {
       added = total(review.added, field, summary, realtime);
       lost = total(review.lost, field, summary, realtime);
 
-      message =
-        `${added.included} additions / ` +
-        `${lost.included} departures counted · 10+ GP";
+            message =
+        added.included + " additions / " +
+        lost.included + " departures counted · 10+ GP";
 
       if (added.excluded + lost.excluded > 0) {
         message +=

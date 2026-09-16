@@ -1,4 +1,4 @@
-import { teamNames, moves } from "./offseason-moves.js?v=2";
+import { teamNames, moves } from "./offseason-moves.js?v=20260916";
 
 const get = id => document.getElementById(id);
 

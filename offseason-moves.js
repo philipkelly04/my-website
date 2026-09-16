@@ -1,14 +1,14 @@
-// PuckLab offseason snapshot: confirmed moves through 2026-09-08.
-// Movement review: 2026-09-10.
+// PuckLab offseason snapshot reviewed through 2026-09-16.
 //
-// Includes only skaters with at least 10 NHL regular-season
+// Includes skaters with at least 10 NHL regular-season
 // games played in 2025-26.
 //
-// Excludes goalies, renewals, unresolved free agents and
-// players who do not meet the games-played requirement.
+// Excludes goalies, renewals, tryouts, unresolved free agents
+// and players below the games-played requirement.
 //
+// Confirmed retirements count as departures.
 // Multiple offseason moves are combined into one net move.
-// This list needs manual updates when further moves are confirmed.
+// This list is maintained manually.
 
 const referenceSources = [
   "https://www.nhl.com/news/topic/trade-coverage/2025-26-nhl-trades",
@@ -19,17 +19,27 @@ const referenceSources = [
 function reviewed(added, lost) {
   const sources = [...referenceSources];
 
-  // The Islanders' announcement resolves a destination typo
-  // for Mitchell Chaffee in the free-agent tracker.
   if (added.includes(8482070) || lost.includes(8482070)) {
     sources.push(
       "https://www.nhl.com/islanders/news/islanders-sign-chaffee"
     );
   }
 
+  if (added.includes(8475184) || lost.includes(8475184)) {
+    sources.push(
+      "https://www.nhl.com/canadiens/news/one-year-contract-for-chris-kreider-sept-12-2026"
+    );
+  }
+
+  if (lost.includes(8475906)) {
+    sources.push(
+      "https://www.nhl.com/news/john-klingberg-retires-from-nhl-after-12-seasons"
+    );
+  }
+
   return {
-    asOf: "2026-09-10",
-    snapshotDate: "2026-09-08",
+    asOf: "2026-09-16",
+    snapshotDate: "2026-09-16",
     qualifyingOnly: true,
     added,
     lost,
@@ -40,7 +50,7 @@ function reviewed(added, lost) {
 export const moves = {
   ANA: reviewed(
     [8475324, 8478421, 8482408],
-    [8474590, 8475462, 8476885, 8477527, 8478424, 8479705, 8482745, 8482803]
+    [8474590, 8475184, 8475462, 8476885, 8477527, 8478424, 8479705, 8482745, 8482803]
   ),
 
   BOS: reviewed(
@@ -109,7 +119,7 @@ export const moves = {
   ),
 
   MTL: reviewed(
-    [8482132],
+    [8475184, 8482132],
     [8475848, 8478104, 8480813]
   ),
 
@@ -155,7 +165,7 @@ export const moves = {
 
   SJS: reviewed(
     [8476885, 8477498, 8478975, 8480891],
-    [8479576, 8479983, 8482166, 8482667]
+    [8475906, 8479576, 8479983, 8482166, 8482667]
   ),
 
   STL: reviewed(

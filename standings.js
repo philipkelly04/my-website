@@ -181,13 +181,21 @@
         throw new Error("Unexpected standings response");
       }
 
-      const teams = data.standings;
+      const teams = data.standings.filter(
+  team => String(team.seasonId) === "20262027"
+);
 
-      if (!teams.length) {
-        meta.textContent = "Waiting for published standings.";
-        showMessage("No standings are currently available.");
-        return;
-      }
+if (!teams.length) {
+  meta.textContent =
+    "2026–27 regular-season standings are not published yet.";
+
+  showMessage(
+    "The division tables will appear once the NHL publishes " +
+    "2026–27 standings. Preseason results do not count."
+  );
+
+  return;
+}
 
       const seasonId = String(teams[0].seasonId || "");
       const season = /^\d{8}$/.test(seasonId)

@@ -46,68 +46,98 @@ function gameStatus(game) {
   return `${date} · ${time}`;
 }
 
+let scoresHaveLoaded = false;
+
 async function loadGames() {
   const container = document.querySelector("#games-grid");
 
-  if (!container) return;
-
   try {
-    const response = await fetch("/api/scores");
-
-    if (!response.ok) {
-      throw new Error("Could not load scores");
-    }
-
-    const data = await response.json();
+    const data = await PuckLive.json("/api/scores");
 
     const games = Array.isArray(data.games)
       ? data.games
-      : (data.gameWeek || []).flatMap(day => day.games || []);
+      : Array.isArray(data.gameWeek)
+        ? data.gameWeek.flatMap(day => day.games || [])
+        : null;
 
-    if (!games.length) {
-      container.innerHTML =
-        '<p class="games-message">No NHL games are currently scheduled.</p>';
-      return;
+    if (!games) {
+      throw new Error("Unexpected scores response.");
     }
 
-    container.innerHTML = games.map(game => {
+    const markup = games.map(game => {
       const away = game.awayTeam || {};
       const home = game.homeTeam || {};
 
       return `
-        
         <a
           class="game-card"
           href="/game.html?id=${encodeURIComponent(game.id)}"
           aria-label="Open ${escapeHtml(teamName(away))} versus ${escapeHtml(teamName(home))} Game Center"
-          style="display: block; color: inherit; text-decoration: none;"
+          style="display:block;color:inherit;text-decoration:none;"
         >
-          <p class="game-status">${escapeHtml(gameStatus(game))}</p>
+          <p class="game-status">
+            ${escapeHtml(gameStatus(game))}
+          </p>
 
           <div class="team">
-            <img src="${escapeHtml(away.logo || "")}"
-                 alt=""
-                 width="48"
-                 height="48">
+            <img
+              src="${escapeHtml(away.logo || "")}"
+              alt=""
+              width="48"
+              height="48"
+            >
             <span>${escapeHtml(teamName(away))}</span>
-            <strong>${away.score ?? "–"}</strong>
+            <strong>${escapeHtml(away.score ?? "–")}</strong>
           </div>
 
           <div class="team">
-            <img src="${escapeHtml(home.logo || "")}"
-                 alt=""
-                 width="48"
-                 height="48">
+            <img
+              src="${escapeHtml(home.logo || "")}"
+              alt=""
+              width="48"
+              height="48"
+            >
             <span>${escapeHtml(teamName(home))}</span>
-            <strong>${home.score ?? "–"}</strong>
+            <strong>${escapeHtml(home.score ?? "–")}</strong>
           </div>
-                </a>
+        </a>
       `;
     }).join("");
+
+    // Avoid rebuilding unchanged cards on every refresh.
+    if (container.innerHTML !== markup && games.length) {
+      container.innerHTML = markup;
+    }
+
+    if (!games.length) {
+      container.innerHTML =
+        '<p class="games-message">' +
+        'No games are currently listed. Check back soon.' +
+        '</p>';
+    }
+
+    scoresHaveLoaded = true;
+
+    const live = games.some(game =>
+      ["LIVE", "CRIT"].includes(game.gameState)
+    );
+
+    return live ? 30000 : 60000;
   } catch (error) {
-    container.innerHTML =
-      '<p class="games-message">NHL games are temporarily unavailable.</p>';
+    if (!scoresHaveLoaded) {
+      container.innerHTML =
+        '<p class="games-message">' +
+        'Games could not be loaded. Use Retry above.' +
+        '</p>';
+    }
+
+    // Keep existing cards if a later update fails.
+    throw error;
   }
 }
 
-loadGames();
+PuckLive.watch({
+  before: document.querySelector("#games-grid"),
+  label: "NHL games",
+  load: loadGames
+});

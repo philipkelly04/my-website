@@ -43,11 +43,11 @@ export default async function handler(request, response) {
       data.gameState === "FINAL" || data.gameState === "OFF";
 
     response.setHeader(
-      "Cache-Control",
-      gameFinished
-        ? "s-maxage=86400, stale-while-revalidate=604800"
-        : "s-maxage=15, stale-while-revalidate=30"
-    );
+  "Cache-Control",
+  gameFinished
+    ? "public, max-age=0, s-maxage=3600, stale-while-revalidate=60"
+    : "public, max-age=0, s-maxage=15, stale-while-revalidate=15"
+);
 
     return response.status(200).json(data);
   } catch (error) {

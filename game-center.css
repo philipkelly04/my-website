@@ -1002,3 +1002,64 @@ tbody tr:hover {
     text-align: left;
   }
 }
+.game-picker {
+  margin-bottom: 24px;
+  padding: 22px;
+  color: #f5f7fa;
+  background: #15191f;
+  border: 1px solid #2a3039;
+  border-radius: 14px;
+}
+
+.game-picker h2 {
+  margin: 0 0 10px;
+}
+
+.game-picker p {
+  color: #aab2bf;
+  line-height: 1.5;
+}
+
+.game-picker label {
+  display: block;
+  margin: 16px 0 8px;
+  font-weight: 700;
+}
+
+.game-picker select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  margin-bottom: 12px;
+  padding: 10px;
+  color: #f5f7fa;
+  background: #0b0d10;
+  border: 1px solid #566171;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.game-picker button {
+  min-height: 44px;
+  margin: 0 8px 8px 0;
+  padding: 10px 16px;
+  color: #111;
+  background: #f5c542;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.game-picker button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-picker select:focus-visible,
+.game-picker button:focus-visible {
+  outline: 3px solid #69b3e7;
+  outline-offset: 3px;
+}

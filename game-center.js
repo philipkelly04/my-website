@@ -1457,9 +1457,11 @@ function startGameUpdates() {
   ).get("id");
 
   if (!gameId) {
-    window.location.replace("/#games-title");
-    return;
-  }
+  loadingMessage.hidden = true;
+  errorMessage.hidden = true;
+  gameContent.hidden = true;
+  return;
+}
 
   if (!/^\d{10}$/.test(gameId)) {
     showError(

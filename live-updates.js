@@ -69,16 +69,16 @@ window.PuckLive = (() => {
         });
 
         status.textContent =
-          `${label}: last checked ${lastSuccess}. Auto-refresh on.`;
+          `${label}: last checked ${lastSuccess}.`;
 
         button.textContent = "Refresh";
       } catch (error) {
         delay = 30000;
 
         status.textContent = lastSuccess
-          ? `${label}: update failed. Showing data last loaded ` +
-            `at ${lastSuccess}. Retrying shortly.`
-          : `${label} unavailable. Please retry; automatic retry is on.`;
+  ? `${label}: update failed. Showing data last loaded ` +
+    `at ${lastSuccess}. Press Retry to try again.`
+  : `${label} unavailable. Press Retry to try again.`;
 
         button.textContent = "Retry";
         console.warn(`${label}:`, error);
@@ -86,21 +86,13 @@ window.PuckLive = (() => {
         busy = false;
         button.disabled = false;
 
-        if (!document.hidden) {
-          timer = setTimeout(refresh, delay);
-        }
+        
       }
     }
 
     button.addEventListener("click", refresh);
 
-    document.addEventListener("visibilitychange", () => {
-      clearTimeout(timer);
-
-      if (!document.hidden) {
-        refresh();
-      }
-    });
+    
 
     refresh();
   }

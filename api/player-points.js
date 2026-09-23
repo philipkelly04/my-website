@@ -11,7 +11,7 @@ export default async function handler(request, response) {
   const today = `${part("year")}-${part("month")}-${part("day")}`;
 
   const season =
-    today >= "2026-09-30" ? "20262027" : "20252026";
+    today >= "2026-09-23" ? "20262027" : "20252026";
 
   const seasonLabel =
     `${season.slice(0, 4)}–${season.slice(6)}`;

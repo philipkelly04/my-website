@@ -1451,49 +1451,135 @@ function displayShotMap(playData) {
 
 
 
-async function loadGame() {
-  const parameters = new URLSearchParams(window.location.search);
-  const gameId = parameters.get("id");
+function startGameUpdates() {
+  const gameId = new URLSearchParams(
+    window.location.search
+  ).get("id");
 
   if (!gameId) {
-    showError("No game was selected. Return to PuckLab and choose a game.");
+    window.location.replace("/#games-title");
     return;
   }
 
-  try {
-    const [gameResponse, playsResponse] = await Promise.all([
-      fetch(`/api/game?id=${encodeURIComponent(gameId)}`),
-      fetch(`/api/plays?id=${encodeURIComponent(gameId)}`)
-    ]);
-
-    const game = await gameResponse.json();
-
-    if (!gameResponse.ok) {
-      throw new Error(game.error || "Unable to load this game.");
-    }
-
-    displayGame(game);
-
-    if (playsResponse.ok) {
-      const playData = await playsResponse.json();
-      displayGameControl(playData);
-displayGameFingerprint(playData);
-displayScoringSummary(playData);
-displayShotMap(playData);
-    } else {
-      const scoringSummary = document.querySelector("#scoringSummary");
-      const shotDetails = document.querySelector("#shotMapDetails");
-
-      scoringSummary.innerHTML =
-        '<p class="stats-message">Scoring details are unavailable.</p>';
-
-      shotDetails.textContent =
-        "Shot locations are currently unavailable.";
-    }
-  } catch (error) {
-    console.error("Game Center error:", error);
-    showError(error.message || "Unable to load this game.");
+  if (!/^\d{10}$/.test(gameId)) {
+    showError(
+      "That game link is invalid. Return to Home and choose a game."
+    );
+    return;
   }
+
+  const query = encodeURIComponent(gameId);
+
+  const detailSections = [
+    document.querySelector("#controlSegments")?.closest("section"),
+    document.querySelector("#awayFingerprintLogo")?.closest("section"),
+    document.querySelector("#scoringSummary")?.closest("section"),
+    document.querySelector("#shotMarkers")?.closest("section")
+  ].filter(Boolean);
+
+  // Don't show empty analysis panels before play-by-play loads.
+  detailSections.forEach(section => {
+    section.hidden = true;
+  });
+
+  let gameLoaded = false;
+  let previousPlays = "";
+
+  function refreshDelay(state) {
+    if (["FINAL", "OFF"].includes(state)) return 300000;
+    if (["LIVE", "CRIT"].includes(state)) return 30000;
+    return 60000;
+  }
+
+  // Scores and player statistics load independently of play-by-play.
+  PuckLive.watch({
+    before: gameContent,
+    label: "Score and player stats",
+
+    load: async () => {
+      try {
+        const game = await PuckLive.json(
+          `/api/game?id=${query}`
+        );
+
+        if (
+          String(game.id) !== gameId ||
+          !game.awayTeam ||
+          !game.homeTeam
+        ) {
+          throw new Error("Incomplete game response.");
+        }
+
+        displayGame(game);
+        gameLoaded = true;
+
+        return refreshDelay(game.gameState);
+      } catch (error) {
+        loadingMessage.hidden = true;
+
+        if (!gameLoaded) {
+          showError(
+            "The game could not be loaded. Use Retry below."
+          );
+        }
+
+        // Once loaded, preserve the scoreboard on a failed update.
+        throw error;
+      }
+    }
+  });
+
+  PuckLive.watch({
+    before: gameContent,
+    label: "Play-by-play and analysis",
+
+    load: async () => {
+      const playData = await PuckLive.json(
+        `/api/plays?id=${query}`
+      );
+
+      if (
+        String(playData.id) !== gameId ||
+        !Array.isArray(playData.plays) ||
+        !playData.awayTeam ||
+        !playData.homeTeam
+      ) {
+        throw new Error("Incomplete play-by-play response.");
+      }
+
+      const snapshot = JSON.stringify(playData);
+
+      if (snapshot !== previousPlays) {
+        const selectedFilter = document.querySelector(
+          ".team-filter.active"
+        )?.dataset.team;
+
+        displayGameControl(playData);
+        displayGameFingerprint(playData);
+        displayScoringSummary(playData);
+        displayShotMap(playData);
+
+        // Retain the selected team when the shot map refreshes.
+        const buttons = [
+          ...document.querySelectorAll(".team-filter")
+        ];
+
+        const selectedButton = buttons.find(button =>
+          button.dataset.team === (selectedFilter || "all")
+        );
+
+        selectedButton?.click();
+
+        detailSections.forEach(section => {
+          section.hidden = false;
+        });
+
+        previousPlays = snapshot;
+      }
+
+      return refreshDelay(playData.gameState);
+    }
+  });
 }
 
-loadGame();
+startGameUpdates();

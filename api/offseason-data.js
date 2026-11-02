@@ -1,3 +1,4 @@
+import { goalieArrivalsResponse } from "../goalie-arrivals-response.js";
 import { arrivalsResponse } from "../arrivals-response.js";
 export const config = { maxDuration: 30 };
 
@@ -12,6 +13,10 @@ export default async function handler(request, response) {
     });
   }
 
+  if (request.query.goalieArrivals === "1") {
+  return goalieArrivalsResponse(request, response);
+  }
+  
   if (request.query.arrivals !== undefined) {
     return arrivalsResponse(request, response);
   }

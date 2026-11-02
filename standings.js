@@ -167,6 +167,87 @@
     return card;
   }
 
+
+  function showDivisionPoints(teams) {
+  const totals = divisions.map(division => {
+    const members = teams.filter(
+      team => team.divisionAbbrev === division.code
+    );
+
+    return {
+      ...division,
+      points: members.reduce((sum, team) => sum + team.points, 0),
+      gp: members.reduce((sum, team) => sum + team.gamesPlayed, 0)
+    };
+  });
+
+  // Avoid showing a misleading total if the feed is incomplete.
+  const complete = divisions.every(division => {
+    const members = teams.filter(
+      team => team.divisionAbbrev === division.code
+    );
+
+    return members.length === 8 && members.every(team =>
+      Number.isInteger(team.points) && team.points >= 0 &&
+      Number.isInteger(team.gamesPlayed) && team.gamesPlayed >= 0
+    );
+  });
+
+  let chart = document.querySelector("#division-points-chart");
+
+  if (!chart) {
+    chart = element("section", "division-points-chart");
+    chart.id = "division-points-chart";
+    chart.setAttribute("aria-labelledby", "division-points-title");
+    wrapper.after(chart);
+  }
+
+  const title = element("h3", "", "Points by Division");
+  title.id = "division-points-title";
+  chart.replaceChildren(title);
+
+  if (!complete) {
+    chart.append(element(
+      "p", "division-points-note",
+      "Division totals will appear when standings are available for all 32 teams."
+    ));
+    return;
+  }
+
+  chart.append(element(
+    "p", "division-points-note",
+    "2026–27 regular season · Total points earned by each division’s eight teams."
+  ));
+
+  totals.sort((a, b) =>
+    b.points - a.points || a.name.localeCompare(b.name)
+  );
+
+  const highest = Math.max(1, ...totals.map(d => d.points));
+
+  for (const division of totals) {
+    const row = element("div", "division-points-row");
+    const heading = element("div", "division-points-heading");
+
+    heading.append(
+      element("strong", "", division.name),
+      element("span", "", `${division.points} pts · ${division.gp} GP`)
+    );
+
+    const track = element("div", "division-points-track");
+    track.setAttribute("aria-hidden", "true");
+
+    const bar = element("div", "division-points-bar");
+    bar.style.width = `${100 * division.points / highest}%`;
+    bar.style.backgroundColor = division.color;
+
+    track.append(bar);
+    row.append(heading, track);
+    chart.append(row);
+  }
+}
+
+  
   async function loadStandings() {
     try {
       const response = await fetch("/api/standings", {
@@ -220,6 +301,7 @@ if (!teams.length) {
       );
 
       wrapper.replaceChildren(...cards);
+      showDivisionPoints(teams);
       wrapper.className = "division-standings";
       wrapper.removeAttribute("tabindex");
       wrapper.removeAttribute("role");

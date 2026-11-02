@@ -1,8 +1,8 @@
 // Explicitly tracked offseason acquisitions, not everyone on the current roster.
 // Add verified final destination clubs here. Matching uses the NHL display name.
 export const tracked = {
-  ANA: ["Laurent Brossoit"], EDM: ["Frederik Andersen"], FLA: ["Akira Schmid"],
-  PHI: ["Joseph Woll"], TOR: ["Sergei Bobrovsky"], WPG: ["Stuart Skinner"]
+  ANA: ["Laurent Brossoit"], EDM: ["Frederik Andersen"], FLA: ["Akira Schmid"], OTT: ["Samuel Ersson"],
+  PHI: ["Joseph Woll"], TOR: ["Sergei Bobrovsky"], WPG: ["Stuart Skinner", "Nico Daws"],   NJD: ["Connor Hellebuyck"],
 };
 export async function goalieArrivalsResponse(req,res) {
   const results=await Promise.allSettled(Object.entries(tracked).map(async ([team,names])=>{
@@ -13,7 +13,8 @@ export async function goalieArrivalsResponse(req,res) {
     const players=[];
     for(const p of goalies){
       const name=[p.firstName?.default,p.lastName?.default].filter(Boolean).join(" ");
-      if(!names.includes(name)) continue;
+      const trackedName = name === "Nicolas Daws" ? "Nico Daws" : name;
+if (!names.includes(trackedName)) continue;
       const shots=p.shotsAgainst, gp=p.gamesPlayed;
       if(!Number.isInteger(shots)||shots<0) throw Error("Missing shots");
       if(!shots) continue;

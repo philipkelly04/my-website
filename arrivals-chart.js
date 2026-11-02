@@ -1,8 +1,8 @@
 import { moves, teamNames } from "./offseason-moves.js";
 
 const root = document.querySelector("#arrivals-chart");
-root.innerHTML = `<h2>New arrivals: games played vs points</h2>
-<p>2026–27 regular season · Tracked offseason skaters with at least one game for their new club. The dashed line is one point per game.</p>
+root.innerHTML = `<h2>New forward arrivals: games played vs points</h2>
+<p>2026–27 regular season · Tracked offseason forwards with at least one game for their new club. The dashed line is one point per game.</p>
 <label>Highlight team <select></select></label> <button type="button">Load chart</button>
 <p role="status"></p><div class="plot"></div><p class="detail" aria-live="polite"></p>`;
 const select = root.querySelector("select"), button = root.querySelector("button");
@@ -56,6 +56,50 @@ function draw() {
       p.name+" ("+p.team+"): "+p.gp+" GP, "+p.goals+" G, "+p.assists+" A, "+p.points+" PTS").join(" · ");
     const dot=el("circle",{cx:x(p.gp),cy:y(p.points),r:list.length>1?7:5,
       fill:matches(list)?"#f5c542":"#798391",stroke:"#101418",tabindex:0,role:"button","aria-label":label},svg);
+    
+    // If players share a spot, prefer the highlighted team's logo.
+const markerPlayer = list.find(p => p.team === selected) || list[0];
+const size = list.length > 1 ? 28 : 23;
+const cx = x(p.gp);
+const cy = y(p.points);
+
+// Keep the original dot as a click target and a fallback.
+dot.setAttribute("r", size / 2);
+dot.setAttribute("fill", "#202a36");
+dot.setAttribute(
+  "stroke",
+  selected && markerPlayer.team === selected ? "#f5c542" : "#526070"
+);
+
+const logo = el("image", {
+  href: `https://assets.nhle.com/logos/nhl/svg/${markerPlayer.team}_dark.svg`,
+  x: cx - size / 2,
+  y: cy - size / 2,
+  width: size,
+  height: size,
+  opacity: matches(list) ? 1 : 0.35,
+  "pointer-events": "none",
+  "aria-hidden": "true"
+}, svg);
+
+logo.addEventListener("error", () => logo.remove());
+
+// A count makes it clear when one logo represents several forwards.
+if (list.length > 1) {
+  el("text", {
+    x: cx + size / 2 - 1,
+    y: cy - size / 2 + 4,
+    fill: "#fff",
+    stroke: "#101418",
+    "stroke-width": 3,
+    "paint-order": "stroke",
+    "font-size": 12,
+    "font-weight": "bold",
+    "pointer-events": "none",
+    "aria-hidden": "true"
+  }, svg, String(list.length));
+}
+    
     el("title",{},dot,label);
     const show=()=>{detail.textContent=label};
     for(const event of ["click","focus","pointerenter"]) dot.addEventListener(event,show);

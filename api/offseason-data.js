@@ -1,3 +1,4 @@
+import { arrivalsResponse } from "../arrivals-response.js";
 export const config = { maxDuration: 30 };
 
 export default async function handler(request, response) {
@@ -11,6 +12,10 @@ export default async function handler(request, response) {
     });
   }
 
+  if (request.query.arrivals !== undefined) {
+    return arrivalsResponse(request, response);
+  }
+  
   const report = String(request.query.report || "summary");
   const pageText = String(request.query.page || "0");
 

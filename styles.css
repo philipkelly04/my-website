@@ -848,3 +848,53 @@ body {
   object-fit: contain;
   filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.45));
 }
+.division-points-chart {
+  margin-top: 24px;
+  padding: 20px;
+  color: #f5f7fa;
+  background: #15191f;
+  border: 1px solid #2a3039;
+  border-radius: 14px;
+}
+
+.division-points-chart h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.division-points-note {
+  margin: 6px 0 18px;
+  color: #aab2bf;
+  line-height: 1.5;
+}
+
+.division-points-row + .division-points-row {
+  margin-top: 14px;
+}
+
+.division-points-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 5px;
+}
+
+.division-points-heading span {
+  color: #c5ccd6;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.division-points-track {
+  height: 12px;
+  overflow: hidden;
+  background: #292f38;
+  border-radius: 6px;
+}
+
+.division-points-bar {
+  height: 100%;
+  border-radius: inherit;
+}

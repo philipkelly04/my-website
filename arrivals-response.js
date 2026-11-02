@@ -11,7 +11,10 @@ export async function arrivalsResponse(req,res) {
     const {skaters}=await r.json();
     if(!Array.isArray(skaters)) throw Error("Incomplete club response");
     const ids=new Set(moves[team].added.map(Number));
-    const players=skaters.filter(p=>ids.has(Number(p.playerId))).map(p=>{
+    const players = skaters.filter(p =>
+  ids.has(Number(p.playerId)) &&
+  ["C", "L", "R", "LW", "RW", "F"].includes(p.positionCode)
+).map(p => {
       const {gamesPlayed:gp,goals,assists,points}=p;
       if(![gp,goals,assists,points].every(n=>Number.isInteger(n)&&n>=0))
         throw Error("Incomplete player totals");
